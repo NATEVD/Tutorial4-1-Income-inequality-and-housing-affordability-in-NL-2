@@ -1,14 +1,10 @@
 ---
-title: "Template"
-author: "Studentnames and studentnumbers here"
+title: "Income inequality and housing affordabilities in The Netherlands"
+author: "Toms Kelderis (2898504)"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
 #Lester M.
-TESTER
-Tester
-MIJKE
-TRYING AGAIN
 # Set-up your environment
 
 ```{r package_install, include=FALSE}
@@ -25,13 +21,13 @@ require(yaml)
 
 #loading in data
 ```{r}
-median-income <- read.csv("data/Inkomen_van_huishoudens__huishoudenskenmerken__regio__indeling_2021__02062026_164212.csv")
+median_income <- read.csv("data/Inkomen_huishoudens__kenmerken__regio_03062026_161425.csv", sep = ";")
 
-quintile-income <- read.csv("data/Kerncijfers_wijken_en_buurten_2017_02062026_164242.csv")
+quintile_income <- read.csv("data/Kerncijfers_wijken_en_buurten_2017_03062026_161403.csv", sep = ";")
 
-housing-costs <- read.csv("data/Opbouw_binnenlands_product__bbp___nationale_rekeningen__1995_2022_02062026_164258.csv")
+housing_costs <- read.csv("data/Opbouw_binnenlands_product__bbp__03062026_161330.csv")
 
-renter-households <- read.csv("Voorraad_woningen__gemiddeld_oppervlak__woningtype__bouwjaarklasse__regio_02062026_164316.csv")
+renter_households <- read.csv("data/Woningen__m___type__bouwjaar__regio_03062026_161143.csv")
 ```
 
 
