@@ -23,6 +23,18 @@ require(rmarkdown)
 require(yaml)
 ```
 
+#loading in data
+```{r}
+median-income <- read.csv("data/Inkomen_van_huishoudens__huishoudenskenmerken__regio__indeling_2021__02062026_164212.csv")
+
+quintile-income <- read.csv("data/Kerncijfers_wijken_en_buurten_2017_02062026_164242.csv")
+
+housing-costs <- read.csv("data/Opbouw_binnenlands_product__bbp___nationale_rekeningen__1995_2022_02062026_164258.csv")
+
+renter-households <- read.csv("Voorraad_woningen__gemiddeld_oppervlak__woningtype__bouwjaarklasse__regio_02062026_164316.csv")
+```
+
+
 # Title Page
 
 Include your names
