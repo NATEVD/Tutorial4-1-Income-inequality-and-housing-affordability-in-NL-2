@@ -11,12 +11,15 @@ output: pdf_document
 install.packages("tidyverse")
 install.packages("yaml")
 install.packages("rmarkdown")
+install.packages("dplyr")
+
 ```
 
 ```{r packages}
 require(tidyverse)
 require(rmarkdown)
 require(yaml)
+library(dplyr)
 ```
 
 #loading in data
@@ -25,9 +28,16 @@ median_income <- read.csv("data/Inkomen_huishoudens__kenmerken__regio_03062026_1
 
 quintile_income <- read.csv("data/Kerncijfers_wijken_en_buurten_2017_03062026_161403.csv", sep = ";")
 
-housing_costs <- read.csv("data/Opbouw_binnenlands_product__bbp__03062026_161330.csv")
+#housing_costs <- read.csv("data/Opbouw_binnenlands_product__bbp__03062026_161330.csv", sep = ";")
 
-renter_households <- read.csv("data/Woningen__m___type__bouwjaar__regio_03062026_161143.csv")
+renter_households <- read.csv("data/Woningen__m___type__bouwjaar__regio_03062026_161143.csv", sep = ";")
+
+test <- housing_costs %>%
+  select(Perioden)
+
+housing_costs$gdp2015 <- housing_costs$Bbp.vanuit.de.inkomensvorming.Prijsindexcijfers.Bruto.binnenlands.product..2015..100.
+
+saveRDS(housing_costs, "data/housing_costs.rds")
 ```
 
 
