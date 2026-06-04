@@ -4,8 +4,8 @@ author: "Toms Kelderis (2898504)"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
-#Lester M.
-# Set-up your environment
+
+#Lester M. \# Set-up your environment
 
 ```{r package_install, include=FALSE}
 install.packages("tidyverse")
@@ -20,79 +20,6 @@ require(tidyverse)li
 require(rmarkdown)
 require(yaml)
 library(dplyr)
-```
-
-#loading in data, not necessary to run it again
-```{r}
-quintile_income <- read.csv("data/83765NED_UntypedDataSet_04062026_151743.csv", sep = ";")
-
-median_income <- read.csv("data/Inkomen_huishoudens__kenmerken__regio_03062026_161425.csv", sep = ";")
-
-renter_households <- read.csv("data/Woningen__m___type__bouwjaar__regio_03062026_161143.csv", sep = ";")
-
-#renaming quintile_income columns
-quintile_income <- quintile_income %>%
-  select(
-    region_name        = WijkenEnBuurten,
-    municipality       = Gemeentenaam_1,
-    region_type        = SoortRegio_2,
-    region_code        = Codering_3,
-    avg_home_value     = GemiddeldeWOZWaardeVanWoningen_35,
-    pct_owner          = Koopwoningen_40,
-    pct_renter         = HuurwoningenTotaal_41,
-    pct_social_housing = InBezitWoningcorporatie_42,
-    avg_income         = GemiddeldInkomenPerInwoner_66,
-    pct_bottom40       = k_40PersonenMetLaagsteInkomen_67,
-    pct_top20          = k_20PersonenMetHoogsteInkomen_68,
-    pct_low_income     = HuishoudensMetEenLaagInkomen_72,
-    pct_poverty_line   = HuishOnderOfRondSociaalMinimum_73)
-
-#filtering to municipalities only
-quintile_income <- quintile_income %>%
-  mutate(region_type = str_trim(region_type)) %>%
-  filter(region_type == "Gemeente")
-
-#fixing decimal commas
-quintile_income <- quintile_income %>%
-  mutate(across(c(avg_home_value, pct_owner, pct_renter, pct_social_housing,
-                  avg_income, pct_bottom40, pct_top20, pct_low_income,
-                  pct_poverty_line),
-                ~ as.numeric(str_replace(., ",", "."))))
-
-#renaming median_income columns
-median_income <- median_income %>%
-  select(
-    population         = Populatie,
-    household_type    = Kenmerken.van.huishoudens,
-    year              = Perioden,
-    region            = Regio.s,
-    median_std_income = Inkomen.Mediaan.gestandaardiseerd.inkomen..1.000.euro.,
-    median_disp_income = Inkomen.Mediaan.besteedbaar.inkomen..1.000.euro.)
-
-#renaming renter_households columns
-renter_households <- renter_households %>%
-  select(
-    housing_type  = Woningtype,
-    year          = Perioden,
-    region        = Regio.s,
-    housing_stock = Beginstand.woningvoorraad..aantal.)
-
-saveRDS(quintile_income, "data/quintile_income.rds")
-saveRDS(median_income, "data/median_income.rds")
-saveRDS(renter_households, "data/renter_households.rds")
-
-#creating new variable
-quintile_income <- quintile_income %>%
-  mutate(
-    affordability_ratio = avg_home_value / avg_income,
-    inequality_gap      = pct_top20 - pct_bottom40)
-
-new_variables <- quintile_income %>%
-  select(municipality, avg_home_value, avg_income, affordability_ratio, inequality_gap)
-```
-
-```{r}
-quantile_income <- readRDS("data/quintile_income.rds")
 ```
 
 # Title Page
@@ -115,15 +42,15 @@ Use APA referencing throughout your document. [Here's a link to some explanation
 
 Include the following:
 
--   Why is this relevant?
+- Why is this relevant?
 
--   ...
+- ...
 
 # Part 2 - Data Sourcing
 
 ## 2.1 Load in the data
 
-```{r loading_data}
+```{r loading_data and cleaning it}
 dataset <- midwest
 
 quintile_income <- read.csv("data/85039NED_Quintile_Income_2021.csv", sep = ";")
@@ -143,11 +70,11 @@ quintile_income <- quintile_income %>%
     pct_owner          = Koopwoningen_40,
     pct_renter         = HuurwoningenTotaal_41,
     pct_social_housing = InBezitWoningcorporatie_42,
-    avg_income         = GemiddeldInkomenPerInwoner_66,
-    pct_bottom40       = k_40PersonenMetLaagsteInkomen_67,
-    pct_top20          = k_20PersonenMetHoogsteInkomen_68,
-    pct_low_income     = HuishoudensMetEenLaagInkomen_72,
-    pct_poverty_line   = HuishOnderOfRondSociaalMinimum_73)
+    avg_income         = GemiddeldInkomenPerInwoner_72,
+    pct_bottom40       = k_40PersonenMetLaagsteInkomen_73,
+    pct_top20          = k_20PersonenMetHoogsteInkomen_74,
+    pct_low_income     = HuishoudensMetEenLaagInkomen_78,
+    pct_poverty_line   = HuishOnderOfRondSociaalMinimum_79 )
 
 #filtering to municipalities only
 quintile_income <- quintile_income %>%
@@ -165,11 +92,11 @@ quintile_income <- quintile_income %>%
 median_income <- median_income %>%
   select(
     population         = Populatie,
-    household_type    = Kenmerken.van.huishoudens,
-    year              = Perioden,
-    region            = Regio.s,
-    median_std_income = Inkomen.Mediaan.gestandaardiseerd.inkomen..1.000.euro.,
-    median_disp_income = Inkomen.Mediaan.besteedbaar.inkomen..1.000.euro.)
+    household_type     = Kenmerken.van.huishoudens,
+    year               = Perioden,
+    region             = Regio.s,
+    median_std_income  = Inkomen.Mediaan.gestandaardiseerd.inkomen..1.000.euro.,
+    median_disp_income = Inkomen.Mediaan.besteedbaar.inkomen..1.000.euro. )
 
 #renaming renter_households columns
 renter_households <- renter_households %>%
@@ -186,71 +113,71 @@ saveRDS(renter_households, "data/renter_households.rds")
 
 ## 2.2 Provide a short summary of the dataset(s)
 
+### Quintile Income
 
+This dataset contains 13 selected variables across 20 Dutch municipalities, collected by CBS for the year 2021. Key variables include average home value in thousands of euros (based on WOZ tax assessment), average income per resident, and the share of residents in the bottom 40% and top 20% of national earners. A limitation is that the WOZ value is a tax assessment rather than an actual market price, and our selection covers only 20 out of approximately 340 Dutch municipalities.
 
-In this case we see 28 variables, but we miss some information on what units they are in. We also don't know anything about the year/moment in which this data has been captured.
+### Median Income
 
+This dataset contains 6 variables across 443 regions, collected by CBS for the year 2021. Key variables are median standardised income and median disposable income, both in thousands of euros, broken down by household type and region. We use this dataset at the national level for time series analysis.
 
+### Renter Households
 
-These are things that are usually included in the metadata of the dataset. For your project, you need to provide us with the information from your metadata that we need to understand your dataset of choice.
+This dataset contains 4 variables across 64 regions, collected by CBS for the year 2021. The key variable is total housing stock broken down by housing type per region. We use this dataset at the national level to analyse differences between housing types.
 
 ## 2.3 Describe the type of variables included
 
-Think of things like:
+### Quintile Income
 
--   Do the variables contain health information or SES information?
+The variables are socioeconomic (SES) in nature, covering income levels and housing ownership. The data comes from administrative sources — CBS combines tax records, municipal registers and housing registries rather than interviewing individuals.
 
--   Havehead(quintile_raw, 7) they been measured by interviewing individuals or is the data coming from administrative sources?
+### Median Income
+
+The variables are SES in nature, focused on household income after taxes. The data comes from administrative tax records from the Dutch tax authority (Belastingdienst).
+
+### Renter Households
+
+The variables are structural rather than SES, they describe the physical housing supply rather than income. The data comes from administrative sources, specifically the Dutch national housing registry (BAG).
 
 # Part 3 - Quantifying
 
-## 3.1 Data cleaning
+## 3.1 Generate necessary variables
 
-```{r data_cleaning}
-mean(dataset$percollege)
-```
-
-Please use a separate 'R block' of code for each type of cleaning. So, e.g. one for missing values, a new one for removing unnecessary variables etc.
-
-## 3.2 Generate necessary variables
-
-Variable 1
+### Variable 1: Affordability Ratio
 
 ```{r gen_var1}
-# Variable 1: Affordability Ratio
-# This shows how many years of income it takes to buy a home in each municipality
+# Affordability ratio = average home value divided by average income (higher number = less affordable relative to income)
 quintile_income <- quintile_income %>%
   mutate(affordability_ratio = avg_home_value / avg_income)
 
+quintile_income %>% 
+  select(municipality, avg_home_value, avg_income, affordability_ratio)
 
-quintile_income %>% select(municipality, avg_home_value, avg_income, affordability_ratio)
-
-saveRDS(quintile_income %>% select(municipality, affordability_ratio), 
+saveRDS(quintile_income %>% select(municipality, affordability_ratio),
         "data/affordability_ratio.rds")
 ```
 
-Variable 2
+### Variable 2: Inequality Gap
 
 ```{r gen_var2}
-# Variable 2: Inequality Gap
-# This shows the difference between high and low earners in each municipality (smaller number = bigger inequality)
+# Inequality gap = difference between top 20% and bottom 40% earners (Smaller the number = bigger gap between rich and poor)
 quintile_income <- quintile_income %>%
   mutate(inequality_gap = pct_top20 - pct_bottom40)
 
+quintile_income %>% 
+  select(municipality, pct_top20, pct_bottom40, inequality_gap)
 
-quintile_income %>% select(municipality, pct_top20, pct_bottom40, inequality_gap)
-
-saveRDS(quintile_income %>% select(municipality, inequality_gap), 
+saveRDS(quintile_income %>% select(municipality, inequality_gap),
         "data/inequality_gap.rds")
 ```
 
-## 3.3 Visualize temporal variation
+## 3.2 Visualize temporal variation
 
 ```{r}
 
 ```
 
-## 3.4 Visualize spatial variation
+## 3.3 Visualize spatial variation
 
 ```{r visualise_map}
 
@@ -258,7 +185,7 @@ saveRDS(quintile_income %>% select(municipality, inequality_gap),
 
 Here you provide a description of why the plot above is relevant to your specific social problem.
 
-## 3.5 Visualize sub-population variation
+## 3.4 Visualize sub-population variation
 
 What is the poverty rate by state?
 
@@ -280,7 +207,7 @@ ggplot(dataset, aes(x = inmetro, y = percadultpoverty)) +
 
 Here you provide a description of why the plot above is relevant to your specific social problem.
 
-## 3.6 Event analysis
+## 3.5 Event analysis
 
 Analyze the relationship between two variables.
 
