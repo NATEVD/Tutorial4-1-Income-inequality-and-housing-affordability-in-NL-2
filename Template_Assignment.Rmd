@@ -22,18 +22,50 @@ require(yaml)
 library(dplyr)
 ```
 
-#loading in data
+#loading in data 
 ```{r}
-median_income <- read.csv("data/Inkomen_huishoudens__kenmerken__regio_03062026_161425.csv", sep = ";")
+#median_income <- read.csv("data/Inkomen_huishoudens__kenmerken__regio_03062026_161425.csv", sep = ";")
 
-quintile_income <- read.csv("data/Kerncijfers_wijken_en_buurten_2017_03062026_161403.csv", sep = ";")
+#quintile_income <- read.csv("data/Kerncijfers_wijken_en_buurten_2017_03062026_161403.csv", sep = ";")
 
 #housing_costs <- read.csv("data/Opbouw_binnenlands_product__bbp__03062026_161330.csv", sep = ";")
 
-renter_households <- read.csv("data/Woningen__m___type__bouwjaar__regio_03062026_161143.csv", sep = ";")
+#renter_households <- read.csv("data/Woningen__m___type__bouwjaar__regio_03062026_161143.csv", sep = ";")
 
-test <- housing_costs %>%
-  select(Perioden)
+median_income <- median_income %>%
+  select(
+    populatiion         = Populatie,
+    household_type    = Kenmerken.van.huishoudens,
+    year              = Perioden,
+    region            = Regio.s,
+    median_std_income = Inkomen.Mediaan.gestandaardiseerd.inkomen..1.000.euro.,
+    median_disp_income = Inkomen.Mediaan.besteedbaar.inkomen..1.000.euro.
+  )
+
+quintile_income <- quintile_income %>%
+  select(
+    region_name        = Wijken.en.buurten,
+    municipality       = Regioaanduiding.Gemeentenaam..naam.,
+    region_type        = Regioaanduiding.Soort.regio..omschrijving.,
+    region_code        = Regioaanduiding.Codering..code.,
+    avg_home_value     = Wonen.Gemiddelde.WOZ.waarde.van.woningen..x.1.000.euro.,
+    pct_owner          = Wonen.Woningen.naar.eigendom.Koopwoningen....,
+    pct_renter         = Wonen.Woningen.naar.eigendom.Huurwoningen.Huurwoningen.totaal....,
+    pct_social_housing = Wonen.Woningen.naar.eigendom.Huurwoningen.In.bezit.woningcorporatie....,
+    avg_income         = Inkomen.Inkomen.van.personen.Gemiddeld.inkomen.per.inwoner...x.1.000.euro.,
+    pct_bottom40       = Inkomen.Inkomen.van.personen.40..personen.met.laagste.inkomen....,
+    pct_top20          = Inkomen.Inkomen.van.personen.20..personen.met.hoogste.inkomen....,
+    pct_low_income     = Inkomen.Inkomen.van.huishoudens.Huishoudens.met.een.laag.inkomen....,
+    pct_poverty_line   = Inkomen.Inkomen.van.huishoudens.Huish..onder.of.rond.sociaal.minimum....
+  )
+
+renter_households <- renter_households %>%
+  select(
+    housing_type  = Woningtype,
+    year          = Perioden,
+    region        = Regio.s,
+    housing_stock = Beginstand.woningvoorraad..aantal.
+  )
 
 housing_costs$gdp2015 <- housing_costs$Bbp.vanuit.de.inkomensvorming.Prijsindexcijfers.Bruto.binnenlands.product..2015..100.
 
