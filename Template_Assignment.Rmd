@@ -24,13 +24,13 @@ library(dplyr)
 
 #loading in data 
 ```{r}
-#median_income <- read.csv("data/Inkomen_huishoudens__kenmerken__regio_03062026_161425.csv", sep = ";")
+median_income <- read.csv("data/Inkomen_huishoudens__kenmerken__regio_03062026_161425.csv", sep = ";")
 
-#quintile_income <- read.csv("data/Kerncijfers_wijken_en_buurten_2017_03062026_161403.csv", sep = ";")
+quintile_income <- read.csv("data/83765NED_UntypedDataSet_04062026_151743.csv", sep = ";")
 
-#housing_costs <- read.csv("data/Opbouw_binnenlands_product__bbp__03062026_161330.csv", sep = ";")
+housing_costs <- read.csv("data/Opbouw_binnenlands_product__bbp__03062026_161330.csv", sep = ";")
 
-#renter_households <- read.csv("data/Woningen__m___type__bouwjaar__regio_03062026_161143.csv", sep = ";")
+renter_households <- read.csv("data/Woningen__m___type__bouwjaar__regio_03062026_161143.csv", sep = ";")
 
 median_income <- median_income %>%
   select(
@@ -39,8 +39,7 @@ median_income <- median_income %>%
     year              = Perioden,
     region            = Regio.s,
     median_std_income = Inkomen.Mediaan.gestandaardiseerd.inkomen..1.000.euro.,
-    median_disp_income = Inkomen.Mediaan.besteedbaar.inkomen..1.000.euro.
-  )
+    median_disp_income = Inkomen.Mediaan.besteedbaar.inkomen..1.000.euro.)
 
 quintile_income <- quintile_income %>%
   select(
@@ -56,16 +55,28 @@ quintile_income <- quintile_income %>%
     pct_bottom40       = Inkomen.Inkomen.van.personen.40..personen.met.laagste.inkomen....,
     pct_top20          = Inkomen.Inkomen.van.personen.20..personen.met.hoogste.inkomen....,
     pct_low_income     = Inkomen.Inkomen.van.huishoudens.Huishoudens.met.een.laag.inkomen....,
-    pct_poverty_line   = Inkomen.Inkomen.van.huishoudens.Huish..onder.of.rond.sociaal.minimum....
-  )
+    pct_poverty_line   = Inkomen.Inkomen.van.huishoudens.Huish..onder.of.rond.sociaal.minimum....)
 
 renter_households <- renter_households %>%
   select(
     housing_type  = Woningtype,
     year          = Perioden,
     region        = Regio.s,
-    housing_stock = Beginstand.woningvoorraad..aantal.
-  )
+    housing_stock = Beginstand.woningvoorraad..aantal.)
+
+#filtering_to_municipalities_only
+
+quintile_income <- quintile_income %>%
+  mutate(region_type = str_trim(region_type)) %>%
+  filter(region_type == "Gemeente")
+
+#cleaning_the_number_collumns
+
+quintile_income <- quintile_income %>%
+  mutate(across(c(avg_home_value, pct_owner, pct_renter, pct_social_housing,
+                  avg_income, pct_bottom40, pct_top20, pct_low_income,
+                  pct_poverty_line),
+                ~ as.numeric(str_replace(., ",", "."))))
 
 housing_costs$gdp2015 <- housing_costs$Bbp.vanuit.de.inkomensvorming.Prijsindexcijfers.Bruto.binnenlands.product..2015..100.
 
@@ -125,7 +136,7 @@ Think of things like:
 
 -   Do the variables contain health information or SES information?
 
--   Have they been measured by interviewing individuals or is the data coming from administrative sources?
+-   Havehead(quintile_raw, 7) they been measured by interviewing individuals or is the data coming from administrative sources?
 
 *For the sake of this example, I will continue with the assignment...*
 
