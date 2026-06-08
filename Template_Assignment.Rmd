@@ -32,19 +32,27 @@ Lecturer - Drs. Fatima Amankour
 
 # Part 1 - Identify a Social Problem
 
-Housing unaffordability and income inequality in the Netherlands
-
 ## 1.1 Describe the Social Problem
-
-Text HERE
-
-Use APA referencing throughout your document. [Here's a link to some explanation.](https://www.mendeley.com/guides/apa-citation-guide/)
 
 Include the following:
 
 - Why is this relevant?
 
-- ...
+RQ: (WHICH IS BETTER?)
+1.What is the relationship between income inequality and housing affordability across Dutch municipalities?
+
+OR
+
+2.To what extent is income inequality associated with housing affordability across Dutch municipalities?
+
+Housing unaffordability and income inequality in the Netherlands
+Housing affordability has become an increasingly important socioeconomic challenge in the Netherlands. Over the past decade, rising house prices and persistent housing shortages have reduced access to owner-occupied housing for many households. According to the Organisation for Economic Co-operation and Development (OECD, 2025), housing affordability remains a major policy concern, while the International Monetary Fund identifies insufficient housing supply as a key driver of affordability pressures in the Dutch housing market (Geis, 2023). 
+
+At the same time, Dutch municipalities differ substantially in terms of income levels and income inequality. Previous research suggests that income inequality may influence housing outcomes through differences in purchasing power, housing market pressures, and access to housing opportunities (Dewilde & Lancee, 2012). As a result, municipalities with higher levels of income
+inequality may experience different housing market dynamics than municipalities with more equal income distributions. 
+
+Housing affordability is closely linked to financial security, wealth accumulation, and social mobility. Understanding whether municipalities with higher income inequality also experience lower housing affordability may therefore provide valuable insights into regional socioeconomic disparities. This study therefore examines the relationship between income inequality and housing affordability across Dutch municipalities, using the ratio of average housing values to income as an indicator of affordability.
+
 
 # Part 2 - Data Sourcing
 
