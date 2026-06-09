@@ -56,6 +56,14 @@ Housing affordability is closely linked to financial security, wealth accumulati
 ## 2.1 Load in the data
 
 ```{r loading_data and cleaning it}
+library(tidyverse)
+library(cbsodataR)
+
+dataset <- midwest
+
+# ── LOAD DATA VIA CBS API ──────────────────────────────────────────────────────
+
+# quintile income: one dataset per year
 kwb_2015 <- cbs_get_data("83220NED")
 kwb_2016 <- cbs_get_data("83487NED")
 kwb_2017 <- cbs_get_data("83765NED")
@@ -64,65 +72,162 @@ kwb_2019 <- cbs_get_data("84583NED")
 kwb_2020 <- cbs_get_data("84799NED")
 kwb_2021 <- cbs_get_data("85039NED")
 
+# median income: single dataset with all years
+median_income_raw <- cbs_get_data("85064NED")
 
+# renter households: single dataset with all years
+renter_households_raw <- cbs_get_data("82550NED")
 
+# ── CLEAN QUINTILE INCOME ──────────────────────────────────────────────────────
 
+# 2015 only - different home value name AND income columns
+clean_kwb_2015 <- function(df, yr) {
+  df %>%
+    mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
+    filter(SoortRegio_2 == "Gemeente") %>%
+    select(
+      region_name        = WijkenEnBuurten,
+      municipality       = Gemeentenaam_1,
+      region_type        = SoortRegio_2,
+      region_code        = Codering_3,
+      avg_home_value     = GemiddeldeWoningwaarde_35,
+      pct_owner          = Koopwoningen_40,
+      pct_renter         = HuurwoningenTotaal_41,
+      pct_social_housing = InBezitWoningcorporatie_42,
+      avg_income         = GemiddeldInkomenPerInwoner_66,
+      pct_bottom40       = k_40PersonenMetLaagsteInkomen_67,
+      pct_top20          = k_20PersonenMetHoogsteInkomen_68,
+      pct_low_income     = HuishoudensMetEenLaagInkomen_72,
+      pct_poverty_line   = HuishOnderOfRondSociaalMinimum_73
+    ) %>%
+    mutate(year = yr)
+}
 
-quintile_income <- read.csv("data/85039NED_Quintile_Income_2021.csv", sep = ";")
+# 2016 & 2017 - same income columns as 2015 but different home value name
+clean_kwb_1617 <- function(df, yr) {
+  df %>%
+    mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
+    filter(SoortRegio_2 == "Gemeente") %>%
+    select(
+      region_name        = WijkenEnBuurten,
+      municipality       = Gemeentenaam_1,
+      region_type        = SoortRegio_2,
+      region_code        = Codering_3,
+      avg_home_value     = GemiddeldeWOZWaardeVanWoningen_35,
+      pct_owner          = Koopwoningen_40,
+      pct_renter         = HuurwoningenTotaal_41,
+      pct_social_housing = InBezitWoningcorporatie_42,
+      avg_income         = GemiddeldInkomenPerInwoner_66,
+      pct_bottom40       = k_40PersonenMetLaagsteInkomen_67,
+      pct_top20          = k_20PersonenMetHoogsteInkomen_68,
+      pct_low_income     = HuishoudensMetEenLaagInkomen_72,
+      pct_poverty_line   = HuishOnderOfRondSociaalMinimum_73
+    ) %>%
+    mutate(year = yr)
+}
 
-median_income <- read.csv("data/05064NED_Median_Income_2021.csv", sep = ";")
+# 2018 only - different income column numbers
+clean_kwb_2018 <- function(df, yr) {
+  df %>%
+    mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
+    filter(SoortRegio_2 == "Gemeente") %>%
+    select(
+      region_name        = WijkenEnBuurten,
+      municipality       = Gemeentenaam_1,
+      region_type        = SoortRegio_2,
+      region_code        = Codering_3,
+      avg_home_value     = GemiddeldeWOZWaardeVanWoningen_35,
+      pct_owner          = Koopwoningen_40,
+      pct_renter         = HuurwoningenTotaal_41,
+      pct_social_housing = InBezitWoningcorporatie_42,
+      avg_income         = GemiddeldInkomenPerInwoner_69,
+      pct_bottom40       = k_40PersonenMetLaagsteInkomen_70,
+      pct_top20          = k_20PersonenMetHoogsteInkomen_71,
+      pct_low_income     = HuishoudensMetEenLaagInkomen_75,
+      pct_poverty_line   = HuishOnderOfRondSociaalMinimum_76
+    ) %>%
+    mutate(year = yr)
+}
 
-renter_households <- read.csv("data/82550NED_Renter_Owner_2021.csv", sep = ";")
+# 2019, 2020 & 2021 - same column numbers
+clean_kwb_1921 <- function(df, yr) {
+  df %>%
+    mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
+    filter(SoortRegio_2 == "Gemeente") %>%
+    select(
+      region_name        = WijkenEnBuurten,
+      municipality       = Gemeentenaam_1,
+      region_type        = SoortRegio_2,
+      region_code        = Codering_3,
+      avg_home_value     = GemiddeldeWOZWaardeVanWoningen_35,
+      pct_owner          = Koopwoningen_40,
+      pct_renter         = HuurwoningenTotaal_41,
+      pct_social_housing = InBezitWoningcorporatie_42,
+      avg_income         = GemiddeldInkomenPerInwoner_72,
+      pct_bottom40       = k_40PersonenMetLaagsteInkomen_73,
+      pct_top20          = k_20PersonenMetHoogsteInkomen_74,
+      pct_low_income     = HuishoudensMetEenLaagInkomen_78,
+      pct_poverty_line   = HuishOnderOfRondSociaalMinimum_79
+    ) %>%
+    mutate(year = yr)
+}
 
-#renaming quintile_income columns
-quintile_income <- quintile_income %>%
-  select(
-    region_name        = WijkenEnBuurten,
-    municipality       = Gemeentenaam_1,
-    region_type        = SoortRegio_2,
-    region_code        = Codering_3,
-    avg_home_value     = GemiddeldeWOZWaardeVanWoningen_35,
-    pct_owner          = Koopwoningen_40,
-    pct_renter         = HuurwoningenTotaal_41,
-    pct_social_housing = InBezitWoningcorporatie_42,
-    avg_income         = GemiddeldInkomenPerInwoner_72,
-    pct_bottom40       = k_40PersonenMetLaagsteInkomen_73,
-    pct_top20          = k_20PersonenMetHoogsteInkomen_74,
-    pct_low_income     = HuishoudensMetEenLaagInkomen_78,
-    pct_poverty_line   = HuishOnderOfRondSociaalMinimum_79 )
+# merge all years
+quintile_income <- bind_rows(
+  clean_kwb_2015(kwb_2015, 2015),
+  clean_kwb_1617(kwb_2016, 2016),
+  clean_kwb_1617(kwb_2017, 2017),
+  clean_kwb_2018(kwb_2018, 2018),
+  clean_kwb_1921(kwb_2019, 2019),
+  clean_kwb_1921(kwb_2020, 2020),
+  clean_kwb_1921(kwb_2021, 2021))
 
-#filtering to municipalities only
-quintile_income <- quintile_income %>%
-  mutate(region_type = str_trim(region_type)) %>%
-  filter(region_type == "Gemeente")
-
-#fixing decimal commas
+# fix decimal commas
 quintile_income <- quintile_income %>%
   mutate(across(c(avg_home_value, pct_owner, pct_renter, pct_social_housing,
                   avg_income, pct_bottom40, pct_top20, pct_low_income,
                   pct_poverty_line),
-                ~ as.numeric(str_replace(., ",", "."))))
+                ~ as.numeric(str_replace(as.character(.), ",", "."))))
 
-#renaming median_income columns
-median_income <- median_income %>%
+# ── CLEAN MEDIAN INCOME ────────────────────────────────────────────────────────
+
+median_income <- median_income_raw %>%
   select(
     population         = Populatie,
-    household_type     = Kenmerken.van.huishoudens,
+    household_type     = KenmerkenVanHuishoudens,
     year               = Perioden,
-    region             = Regio.s,
-    median_std_income  = Inkomen.Mediaan.gestandaardiseerd.inkomen..1.000.euro.,
-    median_disp_income = Inkomen.Mediaan.besteedbaar.inkomen..1.000.euro. )
+    region             = RegioS,
+    median_std_income  = MediaanGestandaardiseerdInkomen_4,
+    median_disp_income = MediaanBesteedbaarInkomen_6)
 
-#renaming renter_households columns
-renter_households <- renter_households %>%
+median_income <- median_income %>%
+  mutate(year = as.integer(str_sub(year, 1, 4)))
+
+# ── CLEAN RENTER HOUSEHOLDS ────────────────────────────────────────────────────
+
+renter_households <- renter_households_raw %>%
   select(
     housing_type  = Woningtype,
     year          = Perioden,
-    region        = Regio.s,
-    housing_stock = Beginstand.woningvoorraad..aantal.)
+    region        = RegioS,
+    housing_stock = BeginstandWoningvoorraad_1 )
 
-saveRDS(quintile_income, "data/quintile_income.rds")
-saveRDS(median_income, "data/median_income.rds")
+renter_households <- renter_households %>%
+  mutate(
+    year = as.integer(str_sub(year, 1, 4)),
+    region = str_trim(region) )
+
+renter_households <- renter_households %>%
+  mutate(housing_type = case_when(
+    housing_type == "T001100" ~ "Total",
+    housing_type == "ZW10290" ~ "Owner-occupied",
+    housing_type == "ZW10340" ~ "Rental",
+    TRUE ~ housing_type))
+
+# ── SAVE CLEANED DATASETS ──────────────────────────────────────────────────────
+
+saveRDS(quintile_income,   "data/quintile_income.rds")
+saveRDS(median_income,     "data/median_income.rds")
 saveRDS(renter_households, "data/renter_households.rds")
 ```
 
