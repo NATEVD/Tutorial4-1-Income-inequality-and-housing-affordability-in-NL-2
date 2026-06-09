@@ -12,6 +12,7 @@ install.packages("tidyverse")
 install.packages("yaml")
 install.packages("rmarkdown")
 install.packages("dplyr")
+install.packages("cbsodataR")
 
 ```
 
@@ -38,12 +39,8 @@ Include the following:
 
 - Why is this relevant?
 
-RQ: (WHICH IS BETTER?)
+
 1.What is the relationship between income inequality and housing affordability across Dutch municipalities?
-
-OR
-
-2.To what extent is income inequality associated with housing affordability across Dutch municipalities?
 
 Housing unaffordability and income inequality in the Netherlands
 Housing affordability has become an increasingly important socioeconomic challenge in the Netherlands. Over the past decade, rising house prices and persistent housing shortages have reduced access to owner-occupied housing for many households. According to the Organisation for Economic Co-operation and Development (OECD, 2025), housing affordability remains a major policy concern, while the International Monetary Fund identifies insufficient housing supply as a key driver of affordability pressures in the Dutch housing market (Geis, 2023). 
@@ -59,7 +56,17 @@ Housing affordability is closely linked to financial security, wealth accumulati
 ## 2.1 Load in the data
 
 ```{r loading_data and cleaning it}
-dataset <- midwest
+kwb_2015 <- cbs_get_data("83220NED")
+kwb_2016 <- cbs_get_data("83487NED")
+kwb_2017 <- cbs_get_data("83765NED")
+kwb_2018 <- cbs_get_data("84286NED")
+kwb_2019 <- cbs_get_data("84583NED")
+kwb_2020 <- cbs_get_data("84799NED")
+kwb_2021 <- cbs_get_data("85039NED")
+
+
+
+
 
 quintile_income <- read.csv("data/85039NED_Quintile_Income_2021.csv", sep = ";")
 
@@ -163,6 +170,7 @@ quintile_income %>%
 
 saveRDS(quintile_income %>% select(municipality, affordability_ratio),
         "data/affordability_ratio.rds")
+
 ```
 
 ### Variable 2: Inequality Gap
