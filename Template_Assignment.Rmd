@@ -17,7 +17,7 @@ install.packages("cbsodataR")
 ```
 
 ```{r packages}
-require(tidyverse)li
+require(tidyverse)
 require(rmarkdown)
 require(yaml)
 library(dplyr)
@@ -61,9 +61,9 @@ library(cbsodataR)
 
 dataset <- midwest
 
-# ── LOAD DATA VIA CBS API ──────────────────────────────────────────────────────
+# Loading in all datasets through CBS API 
 
-# quintile income: one dataset per year
+# quintile_income - one dataset per year
 kwb_2015 <- cbs_get_data("83220NED")
 kwb_2016 <- cbs_get_data("83487NED")
 kwb_2017 <- cbs_get_data("83765NED")
@@ -72,15 +72,15 @@ kwb_2019 <- cbs_get_data("84583NED")
 kwb_2020 <- cbs_get_data("84799NED")
 kwb_2021 <- cbs_get_data("85039NED")
 
-# median income: single dataset with all years
+# median_income -> single dataset with all years
 median_income_raw <- cbs_get_data("85064NED")
 
-# renter households: single dataset with all years
+# renter_households -> single dataset with all years
 renter_households_raw <- cbs_get_data("82550NED")
 
-# ── CLEAN QUINTILE INCOME ──────────────────────────────────────────────────────
+# Cleaning quintile_income dataset 
 
-# 2015 only - different home value name AND income columns
+# 2015 only -> different home value name AND income columns
 clean_kwb_2015 <- function(df, yr) {
   df %>%
     mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
@@ -103,7 +103,7 @@ clean_kwb_2015 <- function(df, yr) {
     mutate(year = yr)
 }
 
-# 2016 & 2017 - same income columns as 2015 but different home value name
+# 2016 and 2017 -> same income columns as 2015 but different home value name
 clean_kwb_1617 <- function(df, yr) {
   df %>%
     mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
@@ -126,7 +126,7 @@ clean_kwb_1617 <- function(df, yr) {
     mutate(year = yr)
 }
 
-# 2018 only - different income column numbers
+# 2018 only -> different income column numbers
 clean_kwb_2018 <- function(df, yr) {
   df %>%
     mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
@@ -135,7 +135,7 @@ clean_kwb_2018 <- function(df, yr) {
       region_name        = WijkenEnBuurten,
       municipality       = Gemeentenaam_1,
       region_type        = SoortRegio_2,
-      region_code        = Codering_3,
+      region_codey        = Codering_3,
       avg_home_value     = GemiddeldeWOZWaardeVanWoningen_35,
       pct_owner          = Koopwoningen_40,
       pct_renter         = HuurwoningenTotaal_41,
@@ -149,7 +149,7 @@ clean_kwb_2018 <- function(df, yr) {
     mutate(year = yr)
 }
 
-# 2019, 2020 & 2021 - same column numbers
+# 2019, 2020 and 2021 -> same column numbers
 clean_kwb_1921 <- function(df, yr) {
   df %>%
     mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
@@ -172,7 +172,7 @@ clean_kwb_1921 <- function(df, yr) {
     mutate(year = yr)
 }
 
-# merge all years
+# mergeing all years
 quintile_income <- bind_rows(
   clean_kwb_2015(kwb_2015, 2015),
   clean_kwb_1617(kwb_2016, 2016),
@@ -182,14 +182,14 @@ quintile_income <- bind_rows(
   clean_kwb_1921(kwb_2020, 2020),
   clean_kwb_1921(kwb_2021, 2021))
 
-# fix decimal commas
+# fixing decimal commas
 quintile_income <- quintile_income %>%
   mutate(across(c(avg_home_value, pct_owner, pct_renter, pct_social_housing,
                   avg_income, pct_bottom40, pct_top20, pct_low_income,
                   pct_poverty_line),
                 ~ as.numeric(str_replace(as.character(.), ",", "."))))
 
-# ── CLEAN MEDIAN INCOME ────────────────────────────────────────────────────────
+# Cleaning median_income dataset 
 
 median_income <- median_income_raw %>%
   select(
@@ -203,7 +203,12 @@ median_income <- median_income_raw %>%
 median_income <- median_income %>%
   mutate(year = as.integer(str_sub(year, 1, 4)))
 
-# ── CLEAN RENTER HOUSEHOLDS ────────────────────────────────────────────────────
+median_income <- median_income %>%
+  filter(year >= 2015 & year <= 2020)
+
+unique(median_income$year)
+
+# Cleaning renter_households dataset
 
 renter_households <- renter_households_raw %>%
   select(
@@ -224,7 +229,12 @@ renter_households <- renter_households %>%
     housing_type == "ZW10340" ~ "Rental",
     TRUE ~ housing_type))
 
-# ── SAVE CLEANED DATASETS ──────────────────────────────────────────────────────
+renter_households <- renter_households %>%
+  filter(year >= 2015 & year <= 2021)
+
+unique(renter_households$year)
+
+# Saving cleaned datasets to Data folder
 
 saveRDS(quintile_income,   "data/quintile_income.rds")
 saveRDS(median_income,     "data/median_income.rds")
@@ -235,29 +245,29 @@ saveRDS(renter_households, "data/renter_households.rds")
 
 ### Quintile Income
 
-This dataset contains 13 selected variables across 20 Dutch municipalities, collected by CBS for the year 2021. Key variables include average home value in thousands of euros (based on WOZ tax assessment), average income per resident, and the share of residents in the bottom 40% and top 20% of national earners. A limitation is that the WOZ value is a tax assessment rather than an actual market price, and our selection covers only 20 out of approximately 340 Dutch municipalities.
+This dataset contains 15 variables across 373 Dutch municipalities, collected by CBS covering 2015 to 2021. Key variables include average home value (WOZ tax assessment), average income per resident, income distribution indicators, and two newly constructed variables: affordability ratio and inequality gap. A limitation is that WOZ value may underestimate true market prices and municipality boundaries changed slightly between years.
 
 ### Median Income
 
-This dataset contains 6 variables across 443 regions, collected by CBS for the year 2021. Key variables are median standardised income and median disposable income, both in thousands of euros, broken down by household type and region. We use this dataset at the national level for time series analysis.
+This dataset contains 6 variables across Dutch regions, collected by CBS covering 2015 to 2020. Key variables are median standardised and disposable income in thousands of euros, broken down by household type. We use this for national-level time series analysis. A limitation is that 2021 data is not yet available.
 
 ### Renter Households
 
-This dataset contains 4 variables across 64 regions, collected by CBS for the year 2021. The key variable is total housing stock broken down by housing type per region. We use this dataset at the national level to analyse differences between housing types.
+This dataset contains 4 variables across Dutch regions, collected by CBS covering 2015 to 2021. The key variable is total housing stock broken down into total, owner-occupied, and rental. A limitation is that it contains no price or income information.
 
 ## 2.3 Describe the type of variables included
 
 ### Quintile Income
 
-The variables are socioeconomic (SES) in nature, covering income levels and housing ownership. The data comes from administrative sources — CBS combines tax records, municipal registers and housing registries rather than interviewing individuals.
+The variables are socioeconomic (SES) in nature, covering income levels, housing ownership, poverty indicators, and two newly constructed analytical variables. The data comes from administrative sources — CBS combines tax records, municipal registers and housing registries rather than interviewing individuals.
 
 ### Median Income
 
-The variables are SES in nature, focused on household income after taxes. The data comes from administrative tax records from the Dutch tax authority (Belastingdienst).
+The variables are SES in nature, focused on household income after taxes broken down by household type. The data comes from administrative tax records from the Dutch tax authority (Belastingdienst).
 
 ### Renter Households
 
-The variables are structural rather than SES, they describe the physical housing supply rather than income. The data comes from administrative sources, specifically the Dutch national housing registry (BAG).
+The variables are structural rather than SES — they describe the physical housing supply by tenure type. The data comes from administrative sources, specifically the Dutch national housing registry (BAG).
 
 # Part 3 - Quantifying
 
@@ -266,30 +276,36 @@ The variables are structural rather than SES, they describe the physical housing
 ### Variable 1: Affordability Ratio
 
 ```{r gen_var1}
-# Affordability ratio = average home value divided by average income (higher number = less affordable relative to income)
+# affordability ratio = home value divided by income
+# higher number = less affordable
 quintile_income <- quintile_income %>%
   mutate(affordability_ratio = avg_home_value / avg_income)
 
-quintile_income %>% 
-  select(municipality, avg_home_value, avg_income, affordability_ratio)
+# check
+quintile_income %>%
+  select(municipality, year, avg_home_value, avg_income, affordability_ratio) %>%
+  head()
 
-saveRDS(quintile_income %>% select(municipality, affordability_ratio),
-        "data/affordability_ratio.rds")
+# Saveing updated quintile_income with affordability_ratio
+saveRDS(quintile_income, "data/quintile_income.rds")
 
 ```
 
 ### Variable 2: Inequality Gap
 
 ```{r gen_var2}
-# Inequality gap = difference between top 20% and bottom 40% earners (Smaller the number = bigger gap between rich and poor)
+# inequality gap = difference between top 20% and bottom 40% earners
+# more negative = more unequal
 quintile_income <- quintile_income %>%
   mutate(inequality_gap = pct_top20 - pct_bottom40)
 
-quintile_income %>% 
-  select(municipality, pct_top20, pct_bottom40, inequality_gap)
+# check
+print(quintile_income %>%
+  select(municipality, year, pct_top20, pct_bottom40, inequality_gap) %>%
+  head())
 
-saveRDS(quintile_income %>% select(municipality, inequality_gap),
-        "data/inequality_gap.rds")
+# Save updated quintile_income with both new variables
+saveRDS(quintile_income, "data/quintile_income.rds")
 ```
 
 ## 3.2 Visualize temporal variation
