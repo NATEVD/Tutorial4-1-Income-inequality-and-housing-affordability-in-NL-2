@@ -2,7 +2,9 @@
 title: "Income inequality and housing affordabilities in The Netherlands"
 author: "Toms Kelderis (2898504)"
 date: "`r Sys.Date()`"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 #Lester M. \# Set-up your environment
@@ -12,8 +14,6 @@ install.packages("tidyverse")
 install.packages("yaml")
 install.packages("rmarkdown")
 install.packages("dplyr")
-install.packages("cbsodataR")
-
 ```
 
 ```{r packages}
@@ -316,11 +316,51 @@ saveRDS(quintile_income, "data/quintile_income.rds")
 
 ## 3.3 Visualize spatial variation
 
-```{r visualise_map}
+```{r visualise_map, fig.cap="Housing affordability ratio across Dutch municipalities in 2021."}
 
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(viridisLite)
+
+# JOINING MUNICIPALITY BOUNDARIES DATA WITH AFFORDABILITY DATA:
+map_data<-quintile_income%>%
+  filter(year==2021)%>%
+  mutate(region_code=trimws(region_code))
+
+municipalities_map<-municipalities%>%
+  left_join(map_data,
+            by=c("statcode"="region_code"))
+
+# MAKING THE MAP
+library(ggplot2)
+
+ggplot(municipalities_map)+
+  geom_sf(aes(fill=affordability_ratio))+
+  scale_fill_viridis_c()+ # default appearance
+  labs(
+    title = "Housing Affordability Across Dutch Municipalities (2021)",
+    subtitle = "Affordability ratio by munipality",
+    fill = "Affordability\nRatio",
+    caption = "Source: CBS (2021)"
+  )+
+  theme_minimal()
+# changing appearance: scale_fill_viridis_c(option = "plasma" OR "magma" OR "cividis")
+
+ggsave(
+  "affordability_spatial_map_2021.png",
+  width = 10,
+  height = 8
+)
+
+# Top 10 municipalities with "worst" affordability (for stronger interpretation)
 ```
 
-Here you provide a description of why the plot above is relevant to your specific social problem.
+Figure 3.3 presents the housing affordability ratio across Dutch municipalities in 2021. The affordability ratio is calculated as average home value divided by average income, where higher values indicate lower affordability because housing prices are high relative to local incomes.
+
+The map reveals substantial spatial variation in housing affordability across the Netherlands. Several municipalities display particularly high affordability ratios, including Bloemendaal (16.35), Blaricum (15.95), Laren (15.46), Landsmeer (13.70), and Wassenaar (13.36). These municipalities experience greater affordability pressures because house values are high relative to local incomes. In contrast, many other municipalities exhibit lower affordability ratios, indicating that housing is more affordable relative to income.
+
+This figure is directly relevant to the social problem of housing affordability because it highlights geographic inequalities in access to housing. The results show that affordability pressures are not evenly distributed across the country, with some municipalities facing substantially greater challenges than others. Understanding these spatial differences is important for policymakers, as local housing markets may require different policy responses than those suggested by national averages.
 
 ## 3.4 Visualize sub-population variation
 
