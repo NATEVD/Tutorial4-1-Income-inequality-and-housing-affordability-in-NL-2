@@ -354,6 +354,11 @@ ggsave(
 )
 
 # Top 10 municipalities with "worst" affordability (for stronger interpretation)
+municipalities_map %>%
+  st_drop_geometry() %>%
+  arrange(desc(affordability_ratio)) %>%
+  select(statnaam, affordability_ratio) %>%
+  head(10)
 ```
 
 Figure 3.3 presents the housing affordability ratio across Dutch municipalities in 2021. The affordability ratio is calculated as average home value divided by average income, where higher values indicate lower affordability because housing prices are high relative to local incomes.
