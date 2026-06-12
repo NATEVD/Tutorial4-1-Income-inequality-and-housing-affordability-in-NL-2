@@ -59,8 +59,6 @@ Housing affordability is closely linked to financial security, wealth accumulati
 library(tidyverse)
 library(cbsodataR)
 
-dataset <- midwest
-
 # Loading in all datasets through CBS API 
 
 # quintile_income - one dataset per year
