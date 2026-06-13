@@ -133,7 +133,7 @@ clean_kwb_2018 <- function(df, yr) {
       region_name        = WijkenEnBuurten,
       municipality       = Gemeentenaam_1,
       region_type        = SoortRegio_2,
-      region_codey        = Codering_3,
+      region_code        = Codering_3,
       avg_home_value     = GemiddeldeWOZWaardeVanWoningen_35,
       pct_owner          = Koopwoningen_40,
       pct_renter         = HuurwoningenTotaal_41,
