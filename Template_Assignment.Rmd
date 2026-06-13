@@ -7,13 +7,20 @@ output:
     df_print: paged
 ---
 
-#Lester M. \# Set-up your environment
+# Set-up your environment
 
 ```{r package_install, include=FALSE}
-install.packages("tidyverse")
-install.packages("yaml")
-install.packages("rmarkdown")
-install.packages("dplyr")
+#as the below"install.packages()" were written, every time anyone knits this document, R will try to download and re-install 4 packages from CRAN. This is slow, requires internet, and can fail/error out the whole knit if there's no internet access or CRAN is unreachable. It also doesn't install "cbsodataR", sf, or "viridisLite", which are library()'d later (lines 60, 319, 322) — so the knit will crash at those points on a fresh machine with "there is no package called 'cbsodataR'".
+
+#install.packages("tidyverse")
+#install.packages("yaml")
+#install.packages("rmarkdown")
+#install.packages("dplyr")
+
+# This conditional version only installs what's actually missing, including everything the doc actually uses:
+pkgs<-c("tidyverse","yaml","rmarkdown","dplyr","cbsodataR","sf","viridisLite")
+new_pkgs<-pkgs[!(pkgs %in% installed.packages()[,"Package"])]
+if(length(new_pkgs)>0)install.packages(new_pkgs)
 ```
 
 ```{r packages}
@@ -100,8 +107,9 @@ clean_kwb_2015 <- function(df, yr) {
     ) %>%
     mutate(year = yr)
 }
+#Optionally add one sentence to your 2.2 limitations/summary noting that CBS renamed this variable from "Woningwaarde" to "WOZ-waarde van woningen" between 2015 and 2016, but the underlying measure and methodology are identical (cite this as a data documentation note, not a real limitation).
 
-# 2016 and 2017 -> same income columns as 2015 but different home value name
+
 clean_kwb_1617 <- function(df, yr) {
   df %>%
     mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
@@ -283,10 +291,6 @@ quintile_income <- quintile_income %>%
 quintile_income %>%
   select(municipality, year, avg_home_value, avg_income, affordability_ratio) %>%
   head()
-
-# Saveing updated quintile_income with affordability_ratio
-saveRDS(quintile_income, "data/quintile_income.rds")
-
 ```
 
 ### Variable 2: Inequality Gap
@@ -314,7 +318,20 @@ saveRDS(quintile_income, "data/quintile_income.rds")
 
 ## 3.3 Visualize spatial variation
 
-```{r visualise_map, fig.cap="Housing affordability ratio across Dutch municipalities in 2021."}
+```{r load_map_data}
+library(cbsodataR)
+library(sf)
+
+# GET MUNICIPALITY BOUNDARIES FOR 2021
+municipalities<-cbs_get_sf("gemeente",year=2021)
+```
+
+head(municipalities$statcode)
+head(map_data$region_code)
+
+sum(is.na(municipalities_map$affordability_ratio))
+
+```{r load_map_data}{r visualise_map, fig.cap="Housing affordability ratio across Dutch municipalities in 2021."}
 
 library(sf)
 library(dplyr)
