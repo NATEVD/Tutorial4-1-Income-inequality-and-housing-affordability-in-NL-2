@@ -469,11 +469,14 @@ Figure 3.4.1 compares the average affordability ratio across municipalities grou
 
 Analyze the relationship between two variables.
 
-```{r analysis}
-
+```{r}
+ggplot(event_data, aes(x = year, y = mean_income)) + geom_line(color = "yellow") + geom_point(color = "yellow") + geom_vline(xintercept = 2020, linetype = "dashed", color = "black") + labs(title = "Average Income Around COVID-19", x = "Year", y = "Average income per resident", caption = "Source: CBS. Red line marks COVID-19 in 2020.") + theme_minimal()
 ```
-
-Here you provide a description of why the plot above is relevant to your specific social problem.
+```{r}
+ggplot(event_data, aes(x = year, y = mean_affordability)) + geom_line(color = "yellow") + geom_point(color = "yellow") + geom_vline(xintercept = 2020, linetype = "dashed", color = "black") + labs(title = "Average Income Around COVID-19", x = "Year", y = "Average income per resident", caption = "Source: CBS. Red line marks COVID-19 in 2020.") + theme_minimal()
+```
+ 
+The first figure shows how average income changed before and after COVID-19. The black dashed line is 2020, the year COVID-19 started. By
 
 # Part 4 - Discussion
 
