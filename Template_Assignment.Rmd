@@ -59,6 +59,7 @@ inequality may experience different housing market dynamics than municipalities 
 Housing affordability is closely linked to financial security, wealth accumulation, and social mobility. Understanding whether municipalities with higher income inequality also experience lower housing affordability may therefore provide valuable insights into regional socioeconomic disparities. This study therefore examines the relationship between income inequality and housing affordability across Dutch municipalities, using the ratio of average housing values to income as an indicator of affordability.
 
 
+
 # Part 2 - Data Sourcing
 
 ## 2.1 Load in the data
@@ -248,6 +249,8 @@ saveRDS(median_income,     "data/median_income.rds")
 saveRDS(renter_households, "data/renter_households.rds")
 ```
 
+
+
 ## 2.2 Provide a short summary of the dataset(s)
 
 ### Quintile Income
@@ -262,6 +265,8 @@ This dataset contains 6 variables across Dutch regions, collected by CBS coverin
 
 This dataset contains 4 variables across Dutch regions, collected by CBS covering 2015 to 2021. The key variable is total housing stock broken down into total, owner-occupied, and rental. A limitation is that it contains no price or income information.
 
+
+
 ## 2.3 Describe the type of variables included
 
 ### Quintile Income
@@ -275,6 +280,8 @@ The variables are SES in nature, focused on household income after taxes broken 
 ### Renter Households
 
 The variables are structural rather than SES — they describe the physical housing supply by tenure type. The data comes from administrative sources, specifically the Dutch national housing registry (BAG).
+
+
 
 # Part 3 - Quantifying
 
@@ -314,6 +321,8 @@ print(quintile_income %>%
 saveRDS(quintile_income, "data/quintile_income.rds")
 ```
 
+
+
 ## 3.2 Visualize temporal variation
 
 ```{r temporal_variation}
@@ -341,8 +350,12 @@ ggplot(Averages_data, aes(x = year, y = mean_unaffordability)) +
 ```
 
 Figure 3.2 presents the average housing unaffordability ratio across Dutch municipalities between 2015 and 2021. The unaffordability ratio is calculated as average home value divided by average income, where higher values indicate that housing is less affordable relative to local incomes.
+
 The figure shows that housing unaffordability generally increased over the study period. After a small decline between 2015 and 2017, the average unaffordability ratio rose steadily from 2018 onwards, reaching its highest level in 2021. This suggests that house prices increased faster than incomes in many municipalities during the later years of the period.
+
 This figure is relevant to the social problem of housing affordability because it demonstrates that affordability pressures have intensified over time. The upward trend indicates that housing has become increasingly difficult to afford relative to income, highlighting the growing importance of housing affordability as a policy issue in the Netherlands.
+
+
 
 ## 3.3 Visualize spatial variation
 
@@ -400,6 +413,8 @@ Figure 3.3 presents the housing un-affordability ratio across Dutch municipaliti
 The map reveals substantial spatial variation in housing un-affordability across the Netherlands. Several municipalities display particularly high un-affordability ratios, including Bloemendaal (16.35), Blaricum (15.95), Laren (15.46), Landsmeer (13.70), and Wassenaar (13.36). These municipalities experience greater un-affordability pressures because house values are high relative to local incomes. In contrast, many other municipalities exhibit lower un-affordability ratios, indicating that housing is more affordable relative to income.
 
 This figure is directly relevant to the social problem of housing affordability because it highlights geographic inequalities in access to housing. The results show that affordability pressures are not evenly distributed across the country, with some municipalities facing substantially greater challenges than others. Understanding these spatial differences is important for policymakers, as local housing markets may require different policy responses than those suggested by national averages.
+
+
 
 ## 3.4 Visualize sub-population variation
 
@@ -472,7 +487,77 @@ Differences between municipalities with high and low renter shares are most pron
 
 This figure is directly relevant to the social problem of housing affordability because it demonstrates that affordability pressures vary not only geographically, but also across socio-economic groups. Income levels and housing tenure structures appear to be associated with differences in housing affordability, highlighting the unequal impact of rising housing costs across Dutch municipalities.
 
-## 3.5 Event analysis
+
+
+## 3.5 Event analysis - Analyze the relationship between two variables.
+
+# DATA PREPPING
+
+```{r event_data_prep}
+event_data <- quintile_income %>% 
+  group_by(year) %>% 
+  summarise(
+    mean_income = mean(avg_income, na.rm = TRUE),
+    mean_unaffordability = mean(unaffordability_ratio, na.rm = TRUE),
+    .groups = "drop"
+    ) %>%
+  mutate(
+    income_index = mean_income/first(mean_income)*100,
+    unaffordability_index = mean_unaffordability/first(mean_unaffordability)*100
+  )
+
+# first(mean_income) is the 2015 value, so income_index becomes 100 in 2015 and tracks percentage change from there each year   # same for unaffordability.
+```
+
+# Shape to long format for 2-line plot w/ legend
+
+```{r event_data_long}
+event_data_long <- event_data %>%
+  select(year, income_index, unaffordability_index) %>%
+  pivot_longer(
+    cols = c(income_index, unaffordability_index),
+    names_to = "variable",
+    values_to = "index_value"
+  ) %>%
+  mutate(variable = recode(variable,
+                           income_index = "Average income",
+                           unaffordability_index = "Unaffordability ratio"
+                           ))
+```
+
+# Making 1 combined plot for event_income and event_unaffordability 
+
+```{r event_combined, fig.cap="Income and housing unaffordability around COVID-19, indexed to 2015 = 100."}
+ggplot(event_data_long, aes(x = year, y = index_value, color = variable)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  geom_vline(xintercept = 2020, linetype = "dashed", color = "red") +
+  annotate("text", x = 2020, y = max(event_data_long$index_value, na.rm = TRUE),
+           label = "COVID-19 (2020)", color = "red", hjust = -0.04, vjust = -0.9, size = 2) +
+  scale_x_continuous(breaks = 2015:2021) + 
+  scale_color_manual(values = c(
+    "Average income" = "steelblue",
+    "Unaffordability ratio" = "darkorange"
+  )) + 
+  labs(
+    title = "Income and Housing Unaffordability Around COVID-19",
+    x = "Year",
+    y = "Index (2015 = 100)",
+    color = "Indicator",
+    caption = "Source: CBS. Red dashed line marks COVID-19 in 2020. Both series indexed to 2015 = 100"
+  ) +
+  theme_minimal()
+
+```
+
+Figure 3.5 presents indexed trends in average income and housing unaffordability across Dutch municipalities between 2015 and 2021, with both variables normalized to a value of 100 in 2015. The red dashed line marks the onset of the COVID-19 pandemic in 2020.
+
+The figure shows that average income increased steadily throughout the study period, rising by approximately 20% between 2015 and 2021. Housing unaffordability followed a different pattern, declining slightly between 2015 and 2017 before increasing consistently from 2018 onwards. By 2021, the unaffordability index had risen above its 2015 level, indicating that housing became less affordable relative to income.
+
+The relationship between the two variables suggests that rising incomes alone were insufficient to offset increasing housing costs. Although income continued to grow during and after the COVID-19 period, housing unaffordability also increased, implying that house prices rose faster than incomes. While the figure does not establish a causal effect of COVID-19, it indicates that affordability pressures intensified during the years surrounding the pandemic despite continued income growth.
+This figure is relevant to the social problem of housing affordability because it highlights the disconnect between income growth and housing market outcomes. Even as average incomes increased, housing became increasingly difficult to afford, suggesting that broader housing market dynamics played an important role in shaping affordability pressures across Dutch municipalities.
+
+# OPTION 2: EVENT ANALYSIS USING EITHER 1 OR 2 (SEPERATE) PLOT(S):
 
 Analyze the relationship between two variables.
 
@@ -506,6 +591,8 @@ ggplot(event_data, aes(x = year, y = mean_income)) +
   ) +
   theme_minimal()
 ```
+Figure 3.5a presents the average income per resident in Dutch municipalities between 2015 and 2021, with the red dashed line marking the onset of the COVID-19 pandemic in 2020. The figure shows a steady increase in average income throughout the entire period. Income continued to rise both before and after 2020, with no obvious decline associated with the pandemic.
+This figure is relevant to the social problem of housing affordability because income is a key determinant of households' ability to access housing. Although average incomes continued to increase during the COVID-19 period, rising incomes alone do not necessarily imply improved affordability if housing prices increase at an even faster rate.
 
 # Unaffordability plot 
 
@@ -526,14 +613,10 @@ ggplot(event_data, aes(x = year, y = mean_unaffordability)) +
   theme_minimal()
 ```
 
-```{r}
-ggplot(event_data, aes(x = year, y = mean_income)) + geom_line(color = "yellow") + geom_point(color = "yellow") + geom_vline(xintercept = 2020, linetype = "dashed", color = "black") + labs(title = "Average Income Around COVID-19", x = "Year", y = "Average income per resident", caption = "Source: CBS. Red line marks COVID-19 in 2020.") + theme_minimal()
-```
-```{r}
-ggplot(event_data, aes(x = year, y = mean_affordability)) + geom_line(color = "yellow") + geom_point(color = "yellow") + geom_vline(xintercept = 2020, linetype = "dashed", color = "black") + labs(title = "Average Income Around COVID-19", x = "Year", y = "Average income per resident", caption = "Source: CBS. Red line marks COVID-19 in 2020.") + theme_minimal()
-```
- 
-The first figure shows how average income changed before and after COVID-19. The black dashed line is 2020, the year COVID-19 started. By
+Figure 3.5b presents the average housing unaffordability ratio in Dutch municipalities between 2015 and 2021, with the red dashed line indicating the onset of the COVID-19 pandemic in 2020. The figure shows that unaffordability declined slightly between 2015 and 2017 before increasing steadily from 2018 onwards. The upward trend continued through 2020 and 2021, with the highest average unaffordability ratio observed in 2021.
+This figure is directly relevant to the social problem of housing affordability because it suggests that housing became increasingly difficult to afford relative to income during the years surrounding the pandemic. While the figure does not establish a causal effect of COVID-19, it indicates that affordability pressures continued to intensify during and immediately after the pandemic period, potentially reflecting broader developments in the Dutch housing market.
+
+Taken together, the figures suggest that although average incomes continued to grow during the COVID-19 period, housing unaffordability also increased, indicating that house prices likely rose faster than incomes between 2020 and 2021.
 
 # Part 4 - Discussion
 
