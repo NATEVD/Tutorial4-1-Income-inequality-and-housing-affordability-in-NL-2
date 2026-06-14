@@ -348,7 +348,7 @@ ggplot(Averages_data, aes(x = year, y = mean_unaffordability)) +
   ) +
   theme_minimal()
 ```
-
+DRAFT INTERPRETATION FIG. 3.2
 Figure 3.2 presents the average housing unaffordability ratio across Dutch municipalities between 2015 and 2021. The unaffordability ratio is calculated as average home value divided by average income, where higher values indicate that housing is less affordable relative to local incomes.
 
 The figure shows that housing unaffordability generally increased over the study period. After a small decline between 2015 and 2017, the average unaffordability ratio rose steadily from 2018 onwards, reaching its highest level in 2021. This suggests that house prices increased faster than incomes in many municipalities during the later years of the period.
