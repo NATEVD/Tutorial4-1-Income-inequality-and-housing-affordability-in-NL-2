@@ -403,74 +403,15 @@ top10 <- municipalities_map %>%
 
 print(top10)
 ```
+Figure 3.3 presents the housing un-affordability ratio across Dutch municipalities in 2021. The un-affordability ratio is calculated as average home value divided by average income, where higher values indicate lower un-affordability because housing prices are high relative to local incomes.
 
-print(last_plot())
-```
-
-
-```{r load_map_data}
-library(cbsodataR)
-library(sf)
-
-# GET MUNICIPALITY BOUNDARIES FOR 2021
-municipalities<-cbs_get_sf("gemeente",year=2021)
-```
-
-head(municipalities$statcode)
-head(map_data$region_code)
-
-sum(is.na(municipalities_map$unaffordability_ratio))
-
-```{r load_map_data}{r visualise_map, fig.cap="Housing affordability ratio across Dutch municipalities in 2021."}
-
-library(sf)
-library(dplyr)
-library(ggplot2)
-library(viridisLite)
-
-# JOINING MUNICIPALITY BOUNDARIES DATA WITH AFFORDABILITY DATA:
-map_data<-quintile_income%>%
-  filter(year==2021)%>%
-  mutate(region_code=trimws(region_code))
-
-municipalities_map<-municipalities%>%
-  left_join(map_data,
-            by=c("statcode"="region_code"))
-
-# MAKING THE MAP
-library(ggplot2)
-
-ggplot(municipalities_map)+
-  geom_sf(aes(fill=unaffordability_ratio))+
-  scale_fill_viridis_c()+ # default appearance
-  labs(
-    title = "Housing Unffordability Across Dutch Municipalities (2021)",
-    subtitle = "Unaffordability ratio by munipality",
-    fill = "Unaffordability\nRatio",
-    caption = "Source: CBS (2021)"
-  )+
-  theme_minimal()
-# changing appearance: scale_fill_viridis_c(option = "plasma" OR "magma" OR "cividis")
-
-# Top 10 municipalities with "worst" unaffordability (for stronger interpretation)
-municipalities_map %>%
-  st_drop_geometry() %>%
-  arrange(desc(unaffordability_ratio)) %>%
-  select(statnaam, affordability_ratio) %>%
-  head(10)
-
-print(last_plot())
-```
-
-Figure 3.3 presents the housing affordability ratio across Dutch municipalities in 2021. The affordability ratio is calculated as average home value divided by average income, where higher values indicate lower affordability because housing prices are high relative to local incomes.
-
-The map reveals substantial spatial variation in housing affordability across the Netherlands. Several municipalities display particularly high affordability ratios, including Bloemendaal (16.35), Blaricum (15.95), Laren (15.46), Landsmeer (13.70), and Wassenaar (13.36). These municipalities experience greater affordability pressures because house values are high relative to local incomes. In contrast, many other municipalities exhibit lower affordability ratios, indicating that housing is more affordable relative to income.
+The map reveals substantial spatial variation in housing un-affordability across the Netherlands. Several municipalities display particularly high un-affordability ratios, including Bloemendaal (16.35), Blaricum (15.95), Laren (15.46), Landsmeer (13.70), and Wassenaar (13.36). These municipalities experience greater un-affordability pressures because house values are high relative to local incomes. In contrast, many other municipalities exhibit lower un-affordability ratios, indicating that housing is more affordable relative to income.
 
 This figure is directly relevant to the social problem of housing affordability because it highlights geographic inequalities in access to housing. The results show that affordability pressures are not evenly distributed across the country, with some municipalities facing substantially greater challenges than others. Understanding these spatial differences is important for policymakers, as local housing markets may require different policy responses than those suggested by national averages.
 
 ## 3.4 Visualize sub-population variation
 
-```{r  subplot boxplot toms version}
+```{r subpop_boxplot_by_year}
 
 library(tidyverse)
 
@@ -482,13 +423,24 @@ subpop_data <- quintile_income %>%
 # check years are correct
 unique(subpop_data$year)
 
-# income categories
-subpop_data <- subpop_data %>%
-  mutate(income_category = case_when(
-    avg_income < 25 ~ "Low income",
-    avg_income <= 32 ~ "Medium income",
+# income categories MIJKE (data-driven terciles)
+income_terciles<-quantile(subpop_data$avg_income, probs = c(1/3,2/3), na.rm = TRUE)
+
+subpop_data<-subpop_data%>%
+  mutate(income_category=case_when(
+    avg_income<income_terciles[1] ~ "Low income",
+    avg_income<income_terciles[2] ~ "Medium income",
     TRUE ~ "High income"
   ))
+# why? - quantile(subpop_data$avg_income, probs = c(1/3,2/3)) is computed with data already filtered to 2015/18/21 (subpop_data at this point in the chunk). This way the cut-off's reflect actual income distr. of municipalities we're plotting, pooled across the 3 yrs.
+  # gives us 2 boundary values: (1) 33rd percentile and (2) 66th percentile of avg_income 
+  # below 33%ile = Low inc.
+  # between 33%ile and 66%ile = Med inc.
+  # above 66%ile = High inc.
+
+#checking what cut-off's and group sizes actually are:
+income_terciles
+table(subpop_data$income_category)
 
 # renter groups
 subpop_data <- subpop_data %>%
@@ -515,97 +467,10 @@ ggplot(subpop_data, aes(x = income_category, y = unaffordability_ratio, fill = r
   ) +
   scale_fill_viridis_d() +
   theme_minimal()
+    #RETURNS ERROR FOR OBJECT "UNAFFORDABILITY RATIO" NOT FOUND...
+names(subpop_data)
 
-print(last_plot())
 ```
-
-
-```{r subpop_boxplot}
-# I made both grp'ed barchart and boxplot. I think boxplot is more suited to our investigation but grouped barchart is mentioned in the rubric if not mistaken. 
-
-# filtering
-subpop_data<-quintile_income%>%
-  filter(year==2021)
-
-# income categories (groups)
-subpop_data<-subpop_data%>%
-  mutate(
-    income_category=case_when(
-      avg_income<25~"Low income",
-      avg_income<=32~"Medium income",
-      TRUE~"High income"
-    )
-  )
-
-# renter groups
-subpop_data<-subpop_data%>%
-  mutate(
-    renter_group=case_when(
-      pct_renter>40~"High renter share",
-      TRUE~"Low renter share"
-    )
-  )
-
-# BOXPLOT
-ggplot(
-  subpop_data,
-  aes(
-    x=income_category,
-    y=affordability_ratio,
-    fill=renter_group
-  )
-)+
-  geom_boxplot()+
-  labs(
-    title="Housing affordability by income category and renter share (2021).",
-    x="Income category",
-    y="Affordability ratio",
-    fill="Renter share",
-    caption="Source: CBS (2021)"
-  )+
-  scale_fill_viridis_d()+
-  theme_minimal()
-# calculating means (for interpretation)
-subpop_data%>%
-  group_by(income_category,renter_group)%>%
-  summarise(
-    mean_affordability=mean(affordability_ratio, na.rm=TRUE),
-    n=n()
-  )
-```
-
-Figure 3.4.1 shows how housing affordability varies across municipalities grouped by income category and renter share in 2021. A clear pattern emerges: municipalities in the high-income category have the highest affordability ratios, while municipalities in the low-income category have the lowest. Because the affordability ratio is calculated as average home value divided by average income, a higher ratio indicates that housing is less affordable relative to local incomes. This suggests that rising housing values in affluent municipalities more than offset their higher incomes. Within both the low- and medium-income categories, municipalities with lower renter shares tend to have higher affordability ratios than municipalities with higher renter shares, indicating slightly lower affordability. The figure is relevant to the housing affordability problem because it demonstrates that affordability pressures are not evenly distributed across municipalities and are particularly pronounced in wealthier areas with expensive housing markets.
-
-```{r subpop_groupedbarchart}
-# summary dataset
-bar_data<-subpop_data%>%
-  group_by(income_category,renter_group)%>%
-  summarise(
-    mean_affordability=
-      mean(affordability_ratio,na.rm=TRUE)
-  )
-
-# PLOTTING
-ggplot(
-  bar_data,
-  aes(
-    x=income_category,
-    y=mean_affordability,
-    fill=renter_group
-  )
-)+
-  geom_col(position = "dodge")+
-  labs(
-    title="Average housing affordability by income category and renter share (2021)",
-    x="Income category",
-    y="Average affordability ratio",
-    fill="Renter share",
-    caption ="Source: CBS (2021)"
-  )+
-  scale_fill_viridis_d()+
-  theme_minimal()
-```
-Figure 3.4.1 compares the average affordability ratio across municipalities grouped by income category and renter share in 2021. Average affordability ratios increase steadily from low-income to high-income municipalities, indicating that housing becomes less affordable relative to income as average incomes rise. In all income categories, municipalities with lower renter shares have slightly higher affordability ratios than municipalities with higher renter shares. This suggests that municipalities with larger rental sectors may experience somewhat lower affordability pressures than municipalities dominated by owner-occupied housing. The figure is relevant to the social problem because it highlights how housing affordability differs across municipal sub-populations, helping identify which types of municipalities face the greatest challenges in accessing affordable housing.
 
 ## 3.5 Event analysis
 
