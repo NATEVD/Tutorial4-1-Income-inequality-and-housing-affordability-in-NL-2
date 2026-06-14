@@ -448,7 +448,21 @@ This figure is directly relevant to the social problem of housing affordability 
 
 ## 3.4 Visualize sub-population variation
 
-```{r subpop boxplot toms version}
+```{r  subplot boxplot toms version}
+# load data
+library(tidyverse)
+
+quintile_income <- readRDS("data/quintile_income.rds")
+
+# add variables
+quintile_income <- quintile_income %>%
+  mutate(
+    unaffordability_ratio = avg_home_value / avg_income,
+    inequality_gap        = pct_top20 - pct_bottom40
+  )
+
+saveRDS(quintile_income, "data/quintile_income.rds")
+
 # filtering to 3 years
 subpop_data <- quintile_income %>%
   filter(year %in% c(2015, 2018, 2021)) %>%
@@ -478,22 +492,46 @@ subpop_data <- subpop_data %>%
                                   levels = c("Low income", "Medium income", "High income")))
 
 # BOXPLOT with all 3 years
-ggplot(subpop_data, aes(x = income_category, y = affordability_ratio, fill = renter_group)) +
+ggplot(subpop_data, aes(x = income_category, y = unaffordability_ratio, fill = renter_group)) +
   geom_boxplot() +
   facet_wrap(~ year) +
   labs(
-    title = "Housing affordability by income category and renter share (2015, 2018, 2021)",
+    title = "Housing unaffordability by income category and renter share (2015, 2018, 2021)",
     x = "Income category",
-    y = "Affordability ratio",
+    y = "Unaffordability ratio",
     fill = "Renter share",
     caption = "Source: CBS (2015-2021)"
   ) +
   scale_fill_viridis_d() +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8))
 
-# fix overlapping titles (still have to fix this)
-theme_minimal() +
-theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8))
+print(last_plot())
+
+# calculating means for interpretation
+subpop_summary <- subpop_data %>%
+  group_by(income_category, renter_group, year) %>%
+  summarise(mean_unaffordability = mean(unaffordability_ratio, na.rm = TRUE), n = n())
+
+print(subpop_summary)
+
+# save summary table
+write.csv(subpop_summary, "data/subpop_summary.csv", row.names = FALSE)
+
+# GROUPED BAR CHART
+ggplot(subpop_summary, aes(x = income_category, y = mean_unaffordability, fill = renter_group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~ year) +
+  labs(
+    title = "Mean unaffordability ratio by income category and renter share (2015, 2018, 2021)",
+    x = "Income category",
+    y = "Mean unaffordability ratio",
+    fill = "Renter share",
+    caption = "Source: CBS (2015-2021). Higher ratio = less affordable."
+  ) +
+  scale_fill_viridis_d() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8))
 
 print(last_plot())
 ```
