@@ -7,7 +7,7 @@ output:
     df_print: paged
 ---
 
-# Set-up your environment
+# Set-up your environment 
 
 ```{r package_install, include=FALSE}
 #as the below"install.packages()" were written, every time anyone knits this document, R will try to download and re-install 4 packages from CRAN. This is slow, requires internet, and can fail/error out the whole knit if there's no internet access or CRAN is unreachable. It also doesn't install "cbsodataR", sf, or "viridisLite", which are library()'d later (lines 60, 319, 322) — so the knit will crash at those points on a fresh machine with "there is no package called 'cbsodataR'".
