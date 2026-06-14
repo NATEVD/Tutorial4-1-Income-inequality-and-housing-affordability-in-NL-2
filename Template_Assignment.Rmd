@@ -33,7 +33,7 @@ install.packages("sf")
 
 # Title Page
 
-Toms Ķelderis (2898504), Nathan van Doorn (2801374), Frederick Nuboer (2809143), Khpelwaak Mamound (2786698), Caner Tepe (2785569), Mijke Gerritsen (2824547)
+Toms Ķelderis (2898504), Nathan van Doorn (2801374), Frederick Nuboer (2809143), Khpelwaak Mamound (2786698), Caner Tepe (2785569), Mijke Gerritsen (2824547), Fouad Safssafi (2787189)
 
 Tutorial 4, Group 1
 
