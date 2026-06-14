@@ -613,6 +613,7 @@ ggplot(event_data, aes(x = year, y = mean_unaffordability)) +
   theme_minimal()
 ```
 
+DRAFT INTERPRETATION UNAFF. PLOT
 Figure 3.5b presents the average housing unaffordability ratio in Dutch municipalities between 2015 and 2021, with the red dashed line indicating the onset of the COVID-19 pandemic in 2020. The figure shows that unaffordability declined slightly between 2015 and 2017 before increasing steadily from 2018 onwards. The upward trend continued through 2020 and 2021, with the highest average unaffordability ratio observed in 2021.
 This figure is directly relevant to the social problem of housing affordability because it suggests that housing became increasingly difficult to afford relative to income during the years surrounding the pandemic. While the figure does not establish a causal effect of COVID-19, it indicates that affordability pressures continued to intensify during and immediately after the pandemic period, potentially reflecting broader developments in the Dutch housing market.
 
