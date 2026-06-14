@@ -591,6 +591,7 @@ ggplot(event_data, aes(x = year, y = mean_income)) +
   ) +
   theme_minimal()
 ```
+DRAFT INTERPRETATION INCOME PLOT
 Figure 3.5a presents the average income per resident in Dutch municipalities between 2015 and 2021, with the red dashed line marking the onset of the COVID-19 pandemic in 2020. The figure shows a steady increase in average income throughout the entire period. Income continued to rise both before and after 2020, with no obvious decline associated with the pandemic.
 This figure is relevant to the social problem of housing affordability because income is a key determinant of households' ability to access housing. Although average incomes continued to increase during the COVID-19 period, rising incomes alone do not necessarily imply improved affordability if housing prices increase at an even faster rate.
 
