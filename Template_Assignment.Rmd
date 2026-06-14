@@ -28,6 +28,7 @@ require(tidyverse)
 require(rmarkdown)
 require(yaml)
 library(dplyr)
+install.packages("sf")
 ```
 
 # Title Page
@@ -282,14 +283,17 @@ The variables are structural rather than SES — they describe the physical hous
 ### Variable 1: Affordability Ratio
 
 ```{r gen_var1}
-# affordability ratio = home value divided by income
+# unaffordability ratio = home value divided by income
 # higher number = less affordable
 quintile_income <- quintile_income %>%
-  mutate(affordability_ratio = avg_home_value / avg_income)
+  mutate(unaffordability_ratio = avg_home_value / avg_income)
+
+municipalities_map <- municipalities_map %>%
+  mutate(unaffordability_ratio = avg_home_value / avg_income)
 
 # check
 quintile_income %>%
-  select(municipality, year, avg_home_value, avg_income, affordability_ratio) %>%
+  select(municipality, year, avg_home_value, avg_income, unaffordability_ratio) %>%
   head()
 ```
 
@@ -318,6 +322,70 @@ saveRDS(quintile_income, "data/quintile_income.rds")
 
 ## 3.3 Visualize spatial variation
 
+```{r spatial variation - toms version}
+library(sf)
+library(tidyverse)
+library(viridisLite)
+
+# load data
+quintile_income <- readRDS("data/quintile_income.rds")
+
+# download municipality map
+municipalities <- st_read("https://cartomap.github.io/nl/wgs84/gemeente_2021.geojson")
+
+# prepare and merge
+map_data <- quintile_income %>%
+  filter(year == 2021) %>%
+  mutate(region_code = trimws(region_code))
+
+municipalities_map <- municipalities %>%
+  left_join(map_data, by = c("statcode" = "region_code"))
+
+# add affordability ratio
+municipalities_map <- municipalities_map %>%
+  mutate(unaffordability_ratio = avg_home_value / avg_income)
+
+# draw the map
+ggplot(municipalities_map) +
+  geom_sf(aes(fill = unaffordability_ratio), color = "white", size = 0.1) +
+  scale_fill_viridis_c(
+    option = "plasma",
+    name = "Unaffordability\nRatio",
+    na.value = "grey80",
+    labels = scales::number_format(accuracy = 0.1)
+  ) +
+  labs(
+    title = "Housing Unaffordability Across Dutch Municipalities (2021)",
+    subtitle = "Unffordability ratio = average home value divided by average income. Higher ratio means homes are less affordable relative to income.",
+    caption = "Source: CBS Kerncijfers wijken en buurten (2021). Grey = no data available."
+  ) +
+  theme_void() +
+  theme(
+    plot.title    = element_text(size = 14, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 9, hjust = 0.5, color = "grey40"),
+    plot.caption  = element_text(size = 8, hjust = 0.5, color = "grey40"),
+    legend.position = "right",
+    legend.title  = element_text(size = 9, face = "bold"),
+    legend.text   = element_text(size = 8),
+    plot.margin   = margin(10, 10, 10, 10)
+  )
+
+print(last_plot())
+
+# top 10 least affordable
+top10 <- municipalities_map %>%
+  st_drop_geometry() %>%
+  arrange(desc(unaffordability_ratio)) %>%
+  select(statnaam, unaffordability_ratio, avg_income, avg_home_value) %>%
+  head(10)
+
+print(top10)
+```
+
+print(last_plot())
+```
+
+
 ```{r load_map_data}
 library(cbsodataR)
 library(sf)
@@ -329,7 +397,7 @@ municipalities<-cbs_get_sf("gemeente",year=2021)
 head(municipalities$statcode)
 head(map_data$region_code)
 
-sum(is.na(municipalities_map$affordability_ratio))
+sum(is.na(municipalities_map$unaffordability_ratio))
 
 ```{r load_map_data}{r visualise_map, fig.cap="Housing affordability ratio across Dutch municipalities in 2021."}
 
@@ -351,23 +419,25 @@ municipalities_map<-municipalities%>%
 library(ggplot2)
 
 ggplot(municipalities_map)+
-  geom_sf(aes(fill=affordability_ratio))+
+  geom_sf(aes(fill=unaffordability_ratio))+
   scale_fill_viridis_c()+ # default appearance
   labs(
-    title = "Housing Affordability Across Dutch Municipalities (2021)",
-    subtitle = "Affordability ratio by munipality",
-    fill = "Affordability\nRatio",
+    title = "Housing Unffordability Across Dutch Municipalities (2021)",
+    subtitle = "Unaffordability ratio by munipality",
+    fill = "Unaffordability\nRatio",
     caption = "Source: CBS (2021)"
   )+
   theme_minimal()
 # changing appearance: scale_fill_viridis_c(option = "plasma" OR "magma" OR "cividis")
 
-# Top 10 municipalities with "worst" affordability (for stronger interpretation)
+# Top 10 municipalities with "worst" unaffordability (for stronger interpretation)
 municipalities_map %>%
   st_drop_geometry() %>%
-  arrange(desc(affordability_ratio)) %>%
+  arrange(desc(unaffordability_ratio)) %>%
   select(statnaam, affordability_ratio) %>%
   head(10)
+
+print(last_plot())
 ```
 
 Figure 3.3 presents the housing affordability ratio across Dutch municipalities in 2021. The affordability ratio is calculated as average home value divided by average income, where higher values indicate lower affordability because housing prices are high relative to local incomes.
@@ -377,6 +447,57 @@ The map reveals substantial spatial variation in housing affordability across th
 This figure is directly relevant to the social problem of housing affordability because it highlights geographic inequalities in access to housing. The results show that affordability pressures are not evenly distributed across the country, with some municipalities facing substantially greater challenges than others. Understanding these spatial differences is important for policymakers, as local housing markets may require different policy responses than those suggested by national averages.
 
 ## 3.4 Visualize sub-population variation
+
+```{r subpop boxplot toms version}
+# filtering to 3 years
+subpop_data <- quintile_income %>%
+  filter(year %in% c(2015, 2018, 2021)) %>%
+  mutate(year = as.factor(year))
+
+# check years are correct
+unique(subpop_data$year)
+
+# income categories
+subpop_data <- subpop_data %>%
+  mutate(income_category = case_when(
+    avg_income < 25 ~ "Low income",
+    avg_income <= 32 ~ "Medium income",
+    TRUE ~ "High income"
+  ))
+
+# renter groups
+subpop_data <- subpop_data %>%
+  mutate(renter_group = case_when(
+    pct_renter > 40 ~ "High renter share",
+    TRUE ~ "Low renter share"
+  ))
+
+# fix ordering
+subpop_data <- subpop_data %>%
+  mutate(income_category = factor(income_category,
+                                  levels = c("Low income", "Medium income", "High income")))
+
+# BOXPLOT with all 3 years
+ggplot(subpop_data, aes(x = income_category, y = affordability_ratio, fill = renter_group)) +
+  geom_boxplot() +
+  facet_wrap(~ year) +
+  labs(
+    title = "Housing affordability by income category and renter share (2015, 2018, 2021)",
+    x = "Income category",
+    y = "Affordability ratio",
+    fill = "Renter share",
+    caption = "Source: CBS (2015-2021)"
+  ) +
+  scale_fill_viridis_d() +
+  theme_minimal()
+
+# fix overlapping titles (still have to fix this)
+theme_minimal() +
+theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8))
+
+print(last_plot())
+```
+
 
 ```{r subpop_boxplot}
 # I made both grp'ed barchart and boxplot. I think boxplot is more suited to our investigation but grouped barchart is mentioned in the rubric if not mistaken. 
