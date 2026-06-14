@@ -316,7 +316,7 @@ saveRDS(quintile_income, "data/quintile_income.rds")
 
 ## 3.2 Visualize temporal variation
 
-```{r}
+```{r temporal_variation}
 # yearly averages
 Averages_data <- quintile_income %>%
   group_by(year) %>%
@@ -338,8 +338,6 @@ ggplot(Averages_data, aes(x = year, y = mean_unaffordability)) +
     y = "Average unaffordability ratio"
   ) +
   theme_minimal()
-
-print(Averages_data)
 ```
 
 ## 3.3 Visualize spatial variation
