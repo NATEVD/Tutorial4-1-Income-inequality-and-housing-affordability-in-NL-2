@@ -479,6 +479,7 @@ ggplot(subpop_data, aes(x = income_category, y = unaffordability_ratio, fill = r
   theme_minimal()
 ```
 
+DRAFT INTERPRETATION FIG. 3.4
 Figure 3.4 compares housing unaffordability across municipalities with different income levels and renter shares in 2015, 2018, and 2021. Municipalities were grouped into low-, medium-, and high-income categories and further divided according to whether they had a high or low share of renter households.
 
 The figure shows that housing unaffordability generally increased between 2015 and 2021 across all income categories, as evidenced by the upward shift in the distributions over time. This increase is particularly visible among high-income municipalities, which consistently exhibit the highest unaffordability ratios. While higher-income municipalities tend to have higher incomes, house values in these areas are also substantially higher, resulting in greater affordability pressures.
