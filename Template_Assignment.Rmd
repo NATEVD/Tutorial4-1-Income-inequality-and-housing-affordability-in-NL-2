@@ -344,7 +344,7 @@ print(Averages_data)
 
 ## 3.3 Visualize spatial variation
 
-```{r spatial variation - toms version}
+```{r spatial_variation}
 library(sf)
 library(tidyverse)
 library(viridisLite)
@@ -391,19 +391,9 @@ ggplot(municipalities_map) +
     legend.text   = element_text(size = 8),
     plot.margin   = margin(10, 10, 10, 10)
   )
-
-print(last_plot())
-
-# top 10 least affordable
-top10 <- municipalities_map %>%
-  st_drop_geometry() %>%
-  arrange(desc(unaffordability_ratio)) %>%
-  select(statnaam, unaffordability_ratio, avg_income, avg_home_value) %>%
-  head(10)
-
-print(top10)
 ```
-Figure 3.3 presents the housing un-affordability ratio across Dutch municipalities in 2021. The un-affordability ratio is calculated as average home value divided by average income, where higher values indicate lower un-affordability because housing prices are high relative to local incomes.
+
+Figure 3.3 presents the housing un-affordability ratio across Dutch municipalities in 2021. The un-affordability ratio is calculated as average home value divided by average income, where higher values indicate greater housing unaffordability because housing prices are high relative to local incomes.
 
 The map reveals substantial spatial variation in housing un-affordability across the Netherlands. Several municipalities display particularly high un-affordability ratios, including Bloemendaal (16.35), Blaricum (15.95), Laren (15.46), Landsmeer (13.70), and Wassenaar (13.36). These municipalities experience greater un-affordability pressures because house values are high relative to local incomes. In contrast, many other municipalities exhibit lower un-affordability ratios, indicating that housing is more affordable relative to income.
 
@@ -412,7 +402,6 @@ This figure is directly relevant to the social problem of housing affordability 
 ## 3.4 Visualize sub-population variation
 
 ```{r subpop_boxplot_by_year}
-
 library(tidyverse)
 
 # filtering to 3 years
@@ -454,6 +443,10 @@ subpop_data <- subpop_data %>%
   mutate(income_category = factor(income_category,
                                   levels = c("Low income", "Medium income", "High income")))
 
+# removing missing unaffordability values
+subpop_data<-subpop_data%>%
+  filter(!is.na(unaffordability_ratio))
+
 # BOXPLOT with all 3 years
 ggplot(subpop_data, aes(x = income_category, y = unaffordability_ratio, fill = renter_group)) +
   geom_boxplot() +
@@ -467,10 +460,15 @@ ggplot(subpop_data, aes(x = income_category, y = unaffordability_ratio, fill = r
   ) +
   scale_fill_viridis_d() +
   theme_minimal()
-    #RETURNS ERROR FOR OBJECT "UNAFFORDABILITY RATIO" NOT FOUND...
-names(subpop_data)
-
 ```
+
+Figure 3.4 compares housing unaffordability across municipalities with different income levels and renter shares in 2015, 2018, and 2021. Municipalities were grouped into low-, medium-, and high-income categories and further divided according to whether they had a high or low share of renter households.
+
+The figure shows that housing unaffordability generally increased between 2015 and 2021 across all income categories, as evidenced by the upward shift in the distributions over time. This increase is particularly visible among high-income municipalities, which consistently exhibit the highest unaffordability ratios. While higher-income municipalities tend to have higher incomes, house values in these areas are also substantially higher, resulting in greater affordability pressures.
+
+Differences between municipalities with high and low renter shares are most pronounced within the low- and medium-income categories. In these groups, municipalities with a low renter share generally display higher unaffordability ratios than those with a high renter share. The boxplots also reveal considerable variation within each category, indicating that municipalities with similar income levels and renter shares can still experience very different housing affordability outcomes.
+
+This figure is directly relevant to the social problem of housing affordability because it demonstrates that affordability pressures vary not only geographically, but also across socio-economic groups. Income levels and housing tenure structures appear to be associated with differences in housing affordability, highlighting the unequal impact of rising housing costs across Dutch municipalities.
 
 ## 3.5 Event analysis
 
