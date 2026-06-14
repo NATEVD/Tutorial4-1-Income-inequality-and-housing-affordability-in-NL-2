@@ -317,7 +317,29 @@ saveRDS(quintile_income, "data/quintile_income.rds")
 ## 3.2 Visualize temporal variation
 
 ```{r}
+# yearly averages
+Averages_data <- quintile_income %>%
+  group_by(year) %>%
+  summarise(
+    mean_unaffordability =
+      mean(unaffordability_ratio, na.rm = TRUE),
+    .groups = "drop"
+  )
 
+# Plot housing unaffordability over time
+ggplot(Averages_data, aes(x = year, y = mean_unaffordability)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_x_continuous(
+    breaks = 2015:2021) +
+  labs(
+    title = "Average housing unaffordability in Dutch municipalities (2015–2021)",
+    x = "Year",
+    y = "Average unaffordability ratio"
+  ) +
+  theme_minimal()
+
+print(Averages_data)
 ```
 
 ## 3.3 Visualize spatial variation
