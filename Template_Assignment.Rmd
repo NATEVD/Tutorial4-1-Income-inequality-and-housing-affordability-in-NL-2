@@ -407,7 +407,7 @@ ggplot(municipalities_map) +
     plot.margin   = margin(10, 10, 10, 10)
   )
 ```
-
+REVISED DRAFT INTERPRETATION FIG. 3.3
 Figure 3.3 presents the housing un-affordability ratio across Dutch municipalities in 2021. The un-affordability ratio is calculated as average home value divided by average income, where higher values indicate greater housing unaffordability because housing prices are high relative to local incomes.
 
 The map reveals substantial spatial variation in housing un-affordability across the Netherlands. Several municipalities display particularly high un-affordability ratios, including Bloemendaal (16.35), Blaricum (15.95), Laren (15.46), Landsmeer (13.70), and Wassenaar (13.36). These municipalities experience greater un-affordability pressures because house values are high relative to local incomes. In contrast, many other municipalities exhibit lower un-affordability ratios, indicating that housing is more affordable relative to income.
