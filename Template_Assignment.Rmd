@@ -3,6 +3,7 @@ title: "Income inequality and housing affordabilities in The Netherlands"
 author: "Toms Kelderis (2898504)"
 date: "`r Sys.Date()`"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 ---
@@ -311,9 +312,31 @@ saveRDS(quintile_income, "data/quintile_income.rds")
 ## 3.2 Visualize temporal variation
 
 ```{r}
+income_plot_data <- filter(median_income, region == "NL01  ", household_type == "1050010", population == "1050010")
 
+ggplot(income_plot_data, aes(x = year, y = median_disp_income)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Median disposable household income in the Netherlands, 2015-2020",
+       x = "Year", y = "Median disposable income (x1,000 euros)",
+       caption = "Source: CBS (85064NED)") +
+  theme_minimal() 
+
+
+housing_plot_data <- filter(renter_households, region == "NL01", housing_type %in% c("Total", "Owner-occupied", "Rental"))
+
+ggplot(housing_plot_data, aes(x = year, y = housing_stock, color = housing_type)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Housing stock by tenure type in the Netherlands, 2015-2021",
+       x = "Year", y = "Number of dwellings", color = "Housing type",
+       caption = "Source: CBS (82550NED)") +
+  theme_minimal() 
 ```
 
+Figure 3.2.1 shows that median disposable household income in the Netherlands increased steadily from €32,500 in 2015 to €38,000 in 2020, an increase of approximately 16.9% over the six-year period (roughly 2.7% per year on average). Growth was relatively modest in the earlier years — around €0.7-0.9 thousand per year between 2015 and 2018 — but accelerated noticeably from 2018 onwards, with increases of €1.7 thousand (2018-2019) and €1.3 thousand (2019-2020). This indicates that income growth gained momentum towards the end of the period rather than following a perfectly linear trend. Since the affordability ratio used elsewhere in this report (Section 3.1) is defined as average home value divided by average income, this income series represents the denominator of that ratio: rising incomes work to improve affordability in isolation, but whether affordability actually improved over this period depends on how housing values developed over the same years.
+
+Figure 3.2.2 shows the development of the Dutch housing stock by tenure type between 2015 and 2021. The total housing stock grew from approximately 7.59 million dwellings in 2015 to 7.97 million in 2021, an increase of about 378,000 dwellings (+5.0%). Both tenure types contributed similar absolute increases — owner-occupied housing grew from roughly 4.91 million to 5.10 million dwellings (+189,800, +3.9%), while the rental segment grew from about 2.68 million to 2.87 million dwellings (+188,500, +7.0%). Because the rental segment started from a smaller base, its relative growth rate was nearly double that of owner-occupied housing, so the rental share of the total stock rose slightly, from 35.3% in 2015 to 36.0% in 2021. Overall, the expansion of the housing stock was gradual and fairly steady across the period, without sharp jumps or declines. Comparing the two figures, median income grew by roughly 17% between 2015 and 2020, considerably faster than the 5% growth in total housing stock over a comparable period (2015-2021). If housing demand scales with rising incomes and population growth, this relatively slow expansion of supply — particularly in the owner-occupied segment — may help explain the affordability pressures identified in the spatial analysis (Section 3.3), where municipalities with higher average incomes also tend to show the highest affordability ratios.
 ## 3.3 Visualize spatial variation
 
 ```{r visualise_map, fig.cap="Housing affordability ratio across Dutch municipalities in 2021."}
