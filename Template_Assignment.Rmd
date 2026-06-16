@@ -587,22 +587,6 @@ The figure shows that average income increased steadily throughout the study per
 The relationship between the two variables suggests that rising incomes alone were insufficient to offset increasing housing costs. Although income continued to grow during and after the COVID-19 period, housing unaffordability also increased, implying that house prices rose faster than incomes. While the figure does not establish a causal effect of COVID-19, it indicates that affordability pressures intensified during the years surrounding the pandemic despite continued income growth.
 This figure is relevant to the social problem of housing affordability because it highlights the disconnect between income growth and housing market outcomes. Even as average incomes increased, housing became increasingly difficult to afford, suggesting that broader housing market dynamics played an important role in shaping affordability pressures across Dutch municipalities.
 
-# OPTION 2: EVENT ANALYSIS USING EITHER 1 OR 2 (SEPERATE) PLOT(S):
-
-Analyze the relationship between two variables.
-
-  # DATA PREPPING
-```{r event_data_prep}
-event_data <- quintile_income %>% 
-  filter(year >= 2015 & year <= 2021) %>%
-  group_by(year) %>%
-  summarise(
-    mean_income = mean(avg_income, na.rm = TRUE),
-    mean_unaffordability = mean(unaffordability_ratio, na.rm = TRUE),
-    .groups = "drop"
-  )
-```
-
 # Income plot
 
 ```{r event_income, fig.cap= "Average income per resident around COVID-19 (2015-2021)."}
