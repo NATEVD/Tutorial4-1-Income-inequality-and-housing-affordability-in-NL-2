@@ -627,6 +627,11 @@ Taken together, the figures suggest that although average incomes continued to g
 # Part 4 - Discussion
 
 ## 4.1 Discuss your findings
+Between 2015 and 2021, average incomes in the Netherlands grew by roughly 17%. Housing unaffordability dipped slightly until 2017, then climbed steadily to its highest point in 2021. Housing stock grew only around 5% over the same period. Prices outran both income and supply, and that gap is what this report is really about.
+The spatial map makes clear that this pressure isn't evenly distributed. Municipalities like Bloemendaal and Blaricum had unaffordability ratios above 15 in 2021; many others sat far lower. A national policy response is a blunt instrument for a problem that's fundamentally local.
+The sub-population data adds the most interesting finding. High-income municipalities had the highest ratios throughout, partly mechanical, since wealthier areas attract more expensive housing. More telling is the low-income, low-renter-share group, where the mean unaffordability ratio barely moved between 2015 (9.34) and 2021 (8.79). These are modest-income areas dominated by owner-occupied housing, with very little buffer if prices keep rising.
+Through COVID-19, income kept rising. Unaffordability kept rising too. The two lines diverge after 2020, not converge.
+A few caveats: WOZ valuations likely understate true market prices, the median income data only runs to 2020, and the analysis is descriptive. It shows associations, not causes. A regression framework with controls for density, distance to urban centres, and zoning restrictions would be the natural next step.
 
 # Part 5 - Reproducibility
 
