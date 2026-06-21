@@ -43,12 +43,6 @@ Lecturer - Drs. Fatima Amankour
 
 ## 1.1 Describe the Social Problem
 
-Include the following:
-
-- Why is this relevant?
-
-1.What is the relationship between income inequality and housing affordability across Dutch municipalities?
-
 Housing unaffordability and income inequality in the Netherlands Housing affordability has become an increasingly important socioeconomic challenge in the Netherlands. Over the past decade, rising house prices and persistent housing shortages have reduced access to owner-occupied housing for many households. According to the Organisation for Economic Co-operation and Development (OECD, 2025), housing affordability remains a major policy concern, while the International Monetary Fund identifies insufficient housing supply as a key driver of affordability pressures in the Dutch housing market (Geis, 2023).
 
 At the same time, Dutch municipalities differ substantially in terms of income levels and income inequality. Previous research suggests that income inequality may influence housing outcomes through differences in purchasing power, housing market pressures, and access to housing opportunities (Dewilde & Lancee, 2012). As a result, municipalities with higher levels of income inequality may experience different housing market dynamics than municipalities with more equal income distributions.
@@ -312,9 +306,7 @@ saveRDS(quintile_income, "data/quintile_income.rds")
 
 ## 3.2 Visualize temporal variation
 
-\<\<\<\<\<\<\< HEAD
-
-```{r}
+```{r temporal_variation}
 # Plot 1 - median income over time
 income_plot_data <- filter(median_income, region == "NL01  ", 
                            household_type == "1050010", 
@@ -415,7 +407,7 @@ ggplot(municipalities_map) +
   )
 ```
 
-REVISED DRAFT INTERPRETATION FIG. 3.3 Figure 3.3 presents the housing un-affordability ratio across Dutch municipalities in 2021. The un-affordability ratio is calculated as average home value divided by average income, where higher values indicate greater housing unaffordability because housing prices are high relative to local incomes.
+REVISED DRAFT INTERPRETATION FIG. 3.3 Figure 3.3 presents the housing un-affordability ratio across Dutch municipalities in 2021. The unaffordability ratio is calculated as average home value divided by average income, where higher values indicate greater housing unaffordability because housing prices are high relative to local incomes.
 
 The map reveals substantial spatial variation in housing un-affordability across the Netherlands. Several municipalities display particularly high un-affordability ratios, including Bloemendaal (16.35), Blaricum (15.95), Laren (15.46), Landsmeer (13.70), and Wassenaar (13.36). These municipalities experience greater un-affordability pressures because house values are high relative to local incomes. In contrast, many other municipalities exhibit lower un-affordability ratios, indicating that housing is more affordable relative to income.
 
@@ -559,9 +551,6 @@ The figure shows that average income increased steadily throughout the study per
 
 The relationship between the two variables suggests that rising incomes alone were insufficient to offset increasing housing costs. Although income continued to grow during and after the COVID-19 period, housing unaffordability also increased, implying that house prices rose faster than incomes. While the figure does not establish a causal effect of COVID-19, it indicates that affordability pressures intensified during the years surrounding the pandemic despite continued income growth. This figure is relevant to the social problem of housing affordability because it highlights the disconnect between income growth and housing market outcomes. Even as average incomes increased, housing became increasingly difficult to afford, suggesting that broader housing market dynamics played an important role in shaping affordability pressures across Dutch municipalities.
 
-
-# OPTION 2: EVENT ANALYSIS USING EITHER 1 OR 2 (SEPERATE) PLOT(S):
-
 Analyze the relationship between two variables.
 
 \# DATA PREPPING
@@ -626,9 +615,11 @@ Taken together, the figures suggest that although average incomes continued to g
 # Part 4 - Discussion
 
 ## 4.1 Discuss your findings
-Between 2015 and 2021, average incomes in the Netherlands grew by roughly 17%. Housing unaffordability dipped slightly until 2017, then climbed steadily to its highest point in 2021. Housing stock grew only around 5% over the same period. Prices outran both income and supply, and that gap is what this report is really about.
+Between 2015 and 2021, average incomes in the Netherlands grew by roughly 17% (Statistics Netherlands [CBS], 2015–2021). Housing unaffordability dipped slightly until 2017, then climbed steadily to its highest point in 2021. HHousing stock grew only around 5% over the same period (Statistics Netherlands [CBS], 2012–2024). Prices outran both income and supply, and that gap is what this report is really about.
+
 The spatial map makes clear that this pressure isn't evenly distributed. Municipalities like Bloemendaal and Blaricum had unaffordability ratios above 15 in 2021; many others sat far lower. A national policy response is a blunt instrument for a problem that's fundamentally local.
 The sub-population data adds the most interesting finding. High-income municipalities had the highest ratios throughout, partly mechanical, since wealthier areas attract more expensive housing. More telling is the low-income, low-renter-share group, where the mean unaffordability ratio barely moved between 2015 (9.34) and 2021 (8.79). These are modest-income areas dominated by owner-occupied housing, with very little buffer if prices keep rising.
+
 Through COVID-19, income kept rising. Unaffordability kept rising too. The two lines diverge after 2020, not converge.
 A few caveats: WOZ valuations likely understate true market prices, the median income data only runs to 2020, and the analysis is descriptive. It shows associations, not causes. A regression framework with controls for density, distance to urban centres, and zoning restrictions would be the natural next step.
 
@@ -640,6 +631,27 @@ Provide the link to your PUBLIC repository here: https://github.com/NATEVD/Tutor
 
 ## 5.2 Reference list
 
-Use APA referencing throughout your document.
+## 5.2 Reference list
+
+Dewilde, C., & Lancee, B. (2012). *Income inequality and access to housing in
+Europe* (GINI Discussion Paper No. 32). Amsterdam Institute for Advanced Labour
+Studies (AIAS).
+https://gini-research.org/wp-content/uploads/2021/03/DP_32_Income-Inequality-and-Access-to-Housing-in-Europe.pdf
+
+Geis, A. (2023). *Housing supply in the Netherlands: The road to more affordable
+living* (IMF Selected Issues Paper No. SIP/2023/023). International Monetary Fund.
+https://www.imf.org/-/media/files/publications/selected-issues-papers/2023/english/sipea2023023.pdf
+
+OECD. (2025). *OECD economic surveys: Netherlands 2025*. OECD Publishing.
+https://www.oecd.org/en/publications/oecd-economic-surveys-netherlands-2025_2dd1f4aa-en.html
+
+Statistics Netherlands (CBS). (2015–2021). *Kerncijfers wijken en buurten*
+[Dataset]. CBS Open Data. https://opendata.cbs.nl
+
+Statistics Netherlands (CBS). (2011–2020). *Inkomen van huishoudens,
+huishoudenskenmerken, regio* [Dataset]. CBS Open Data. https://opendata.cbs.nl
+
+Statistics Netherlands (CBS). (2012–2024). *Woningen naar type, bouwjaar, regio*
+[Dataset]. CBS Open Data. https://opendata.cbs.nl
 
 
