@@ -500,7 +500,8 @@ This figure is directly relevant to the social problem of housing affordability 
 
 ```{r event_data_prep}
 event_data <- quintile_income %>% 
-  group_by(year) %>% 
+  filter(year >= 2015 & year <= 2021) %>%
+  group_by(year) %>%
   summarise(
     mean_income = mean(avg_income, na.rm = TRUE),
     mean_unaffordability = mean(unaffordability_ratio, na.rm = TRUE),
@@ -510,15 +511,10 @@ event_data <- quintile_income %>%
     income_index = mean_income/first(mean_income)*100,
     unaffordability_index = mean_unaffordability/first(mean_unaffordability)*100
   )
-
-# first(mean_income) is the 2015 value, so income_index becomes 100 in 2015 and tracks percentage change from there each year   # same for unaffordability.
 ```
 
-
 ```{r event_data_long}
-
-## Shape to long format for 2-line plot w/ legend
-
+# Shape to long format for 2-line plot w/ legend
 event_data_long <- event_data %>%
   select(year, income_index, unaffordability_index) %>%
   pivot_longer(
@@ -532,11 +528,8 @@ event_data_long <- event_data %>%
                            ))
 ```
 
-
 ```{r event_combined, fig.cap="Income and housing unaffordability around COVID-19, indexed to 2015 = 100."}
-
-## Making 1 combined plot for event_income and event_unaffordability
-
+# Making 1 combined plot for event_income and event_unaffordability
 ggplot(event_data_long, aes(x = year, y = index_value, color = variable)) +
   geom_line(linewidth = 1) +
   geom_point(size = 2) +
@@ -556,7 +549,6 @@ ggplot(event_data_long, aes(x = year, y = index_value, color = variable)) +
     caption = "Source: CBS. Red dashed line marks COVID-19 in 2020. Both series indexed to 2015 = 100"
   ) +
   theme_minimal()
-
 ```
 
 ### Interpretation dual-line event plot
@@ -568,7 +560,7 @@ The figure shows that average income increased steadily throughout the study per
 The relationship between the two variables suggests that rising incomes alone were insufficient to offset increasing housing costs. Although income continued to grow during and after the COVID-19 period, housing unaffordability also increased, implying that house prices rose faster than incomes. While the figure does not establish a causal effect of COVID-19, it indicates that affordability pressures intensified during the years surrounding the pandemic despite continued income growth. This figure is relevant to the social problem of housing affordability because it highlights the disconnect between income growth and housing market outcomes. Even as average incomes increased, housing became increasingly difficult to afford, suggesting that broader housing market dynamics played an important role in shaping affordability pressures across Dutch municipalities.
 
 
-```{r event_data_prep}
+```{r event_data_prep2}
 event_data <- quintile_income %>% 
   filter(year >= 2015 & year <= 2021) %>%
   group_by(year) %>%
