@@ -1,6 +1,6 @@
 ---
 title: "Income inequality and housing affordabilities in The Netherlands"
-author: "Toms Kelderis (2898504)"
+author: "Toms Kelderis (2898504), Nathan van Doorn (2801374), Frederick Nuboer (2809143), Khpelwaak Mamound (2786698), Caner Tepe (2785569), Mijke Gerritsen (2824547), Fouad Safssafi (2787189)"
 date: "`r Sys.Date()`"
 output:
   pdf_document: default
@@ -47,7 +47,7 @@ Housing unaffordability and income inequality in the Netherlands Housing afforda
 
 At the same time, Dutch municipalities differ substantially in terms of income levels and income inequality. Previous research suggests that income inequality may influence housing outcomes through differences in purchasing power, housing market pressures, and access to housing opportunities (Dewilde & Lancee, 2012). As a result, municipalities with higher levels of income inequality may experience different housing market dynamics than municipalities with more equal income distributions.
 
-Housing affordability is closely linked to financial security, wealth accumulation, and social mobility. Understanding whether municipalities with higher income inequality also experience lower housing affordability may therefore provide valuable insights into regional socioeconomic disparities. This study therefore examines the relationship between income inequality and housing affordability across Dutch municipalities, using the ratio of average housing values to income as an indicator of affordability.However, no study has systematically quantified this relationship at the municipality level using administrative CBS data across multiple years, leaving a gap in the 
+Housing affordability is closely linked to financial security, wealth accumulation, and social mobility. Understanding whether municipalities with higher income inequality also experience lower housing affordability may therefore provide valuable insights into regional socioeconomic disparities. This study therefore examines the relationship between income inequality and housing affordability across Dutch municipalities, using the ratio of average housing values to income as an indicator of affordability. However, no study has systematically quantified this relationship at the municipality level using administrative CBS data across multiple years, leaving a gap in the 
 empirical understanding of local housing affordability dynamics in the Netherlands.
 
 # Part 2 - Data Sourcing
@@ -251,7 +251,7 @@ This dataset contains 6 variables across Dutch regions, collected by CBS coverin
 
 This dataset contains 4 variables across Dutch regions, collected by CBS covering 2015 to 2021. The key variable is total housing stock broken down into total, owner-occupied, and rental. A limitation is that it contains no price or income information.
 
-### Justification of the choses data source
+### Justification of the chosen data source
 
 CBS was chosen as the primary data source for this study because it provides the most comprehensive and reliable administrative data on Dutch municipalities. Unlike Eurostat, which only provides data at the national or provincial level, CBS publishes municipality-level data that allows for a detailed spatial analysis across all Dutch gemeenten. Compared to survey-based sources, CBS administrative data covers the entire population rather than a sample, eliminating sampling error and making it more suitable for municipality-level comparisons. All three datasets are publicly available through the CBS Open Data portal (opendata.cbs.nl) and are collected using consistent methodology across years, which supports reliable longitudinal analysis.
 
