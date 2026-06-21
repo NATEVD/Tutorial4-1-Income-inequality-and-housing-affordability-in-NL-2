@@ -1,31 +1,17 @@
-# Income Inequality and Housing Unaffordability in the Netherlands
+## How to reproduce
 
-## How to reproduce this analysis
-
-### Step 1 - Clone the repository
-git clone https://github.com/toms-kelderis/Tutorial-4-1-Income-inequality-and-housing-affordability
-
-### Step 2 - Install R and RStudio
-Download R from https://cran.r-project.org
-Download RStudio from https://posit.co/download/rstudio-desktop
-
-### Step 3 - Restore packages
-Open RStudio, open the project, then run in Console:
-renv::restore()
-
-### Step 4 - Run the analysis
-source("run_all.R")
+1. Clone this repository
+2. Open RStudio and open the project
+3. Run in Console: renv::restore()
+4. Run in Console: source("run_all.R")
 
 ## Data sources
 All data is downloaded automatically from CBS via the cbsodataR package.
-No manual downloads are needed.
+No manual downloads needed.
 
 - quintile_income: CBS datasets 83220NED (2015) through 85039NED (2021)
 - median_income: CBS dataset 85064NED
 - renter_households: CBS dataset 82550NED
 
-## Folder structure
-- Template_Assignment.Rmd - main analysis file
-- run_all.R - script to reproduce everything
-- renv.lock - package versions for reproducibility
-- data/ - cleaned datasets saved as .rds files
+## Main file
+Tutorial_4_group_1_Income_inequality_and_housing_affordabilities_in_The_Netherlands.Rmd
