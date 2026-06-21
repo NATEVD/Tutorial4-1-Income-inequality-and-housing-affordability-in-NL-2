@@ -29,7 +29,6 @@ require(tidyverse)
 require(rmarkdown)
 require(yaml)
 library(dplyr)
-install.packages("sf")
 ```
 
 # Title Page
