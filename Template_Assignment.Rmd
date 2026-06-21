@@ -498,8 +498,6 @@ This figure is directly relevant to the social problem of housing affordability 
 
 ## 3.5 Event analysis
 
-# DATA PREPPING
-
 ```{r event_data_prep}
 event_data <- quintile_income %>% 
   group_by(year) %>% 
@@ -516,9 +514,11 @@ event_data <- quintile_income %>%
 # first(mean_income) is the 2015 value, so income_index becomes 100 in 2015 and tracks percentage change from there each year   # same for unaffordability.
 ```
 
-## Shape to long format for 2-line plot w/ legend
 
 ```{r event_data_long}
+
+## Shape to long format for 2-line plot w/ legend
+
 event_data_long <- event_data %>%
   select(year, income_index, unaffordability_index) %>%
   pivot_longer(
@@ -532,9 +532,11 @@ event_data_long <- event_data %>%
                            ))
 ```
 
-## Making 1 combined plot for event_income and event_unaffordability
 
 ```{r event_combined, fig.cap="Income and housing unaffordability around COVID-19, indexed to 2015 = 100."}
+
+## Making 1 combined plot for event_income and event_unaffordability
+
 ggplot(event_data_long, aes(x = year, y = index_value, color = variable)) +
   geom_line(linewidth = 1) +
   geom_point(size = 2) +
