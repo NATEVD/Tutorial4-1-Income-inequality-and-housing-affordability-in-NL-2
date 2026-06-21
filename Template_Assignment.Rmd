@@ -1,0 +1,671 @@
+---
+title: "Income inequality and housing affordabilities in The Netherlands"
+author: "Toms Kelderis (2898504)"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+# Set-up your environment
+
+```{r package_install, include=FALSE}
+#as the below"install.packages()" were written, every time anyone knits this document, R will try to download and re-install 4 packages from CRAN. This is slow, requires internet, and can fail/error out the whole knit if there's no internet access or CRAN is unreachable. It also doesn't install "cbsodataR", sf, or "viridisLite", which are library()'d later (lines 60, 319, 322) — so the knit will crash at those points on a fresh machine with "there is no package called 'cbsodataR'".
+
+#install.packages("tidyverse")
+#install.packages("yaml")
+#install.packages("rmarkdown")
+#install.packages("dplyr")
+
+# This conditional version only installs what's actually missing, including everything the doc actually uses:
+pkgs<-c("tidyverse","yaml","rmarkdown","dplyr","cbsodataR","sf","viridisLite")
+new_pkgs<-pkgs[!(pkgs %in% installed.packages()[,"Package"])]
+if(length(new_pkgs)>0)install.packages(new_pkgs)
+```
+
+```{r packages}
+require(tidyverse)
+require(rmarkdown)
+require(yaml)
+library(dplyr)
+```
+
+# Title Page
+
+Toms Ķelderis (2898504), Nathan van Doorn (2801374), Frederick Nuboer (2809143), Khpelwaak Mamound (2786698), Caner Tepe (2785569), Mijke Gerritsen (2824547), Fouad Safssafi (2787189)
+
+Tutorial 4, Group 1
+
+Lecturer - Drs. Fatima Amankour
+
+# Part 1 - Identify a Social Problem
+
+## 1.1 Describe the Social Problem
+
+Housing unaffordability and income inequality in the Netherlands Housing affordability has become an increasingly important socioeconomic challenge in the Netherlands. Over the past decade, rising house prices and persistent housing shortages have reduced access to owner-occupied housing for many households. According to the Organisation for Economic Co-operation and Development (OECD, 2025), housing affordability remains a major policy concern, while the International Monetary Fund identifies insufficient housing supply as a key driver of affordability pressures in the Dutch housing market (Geis, 2023).
+
+At the same time, Dutch municipalities differ substantially in terms of income levels and income inequality. Previous research suggests that income inequality may influence housing outcomes through differences in purchasing power, housing market pressures, and access to housing opportunities (Dewilde & Lancee, 2012). As a result, municipalities with higher levels of income inequality may experience different housing market dynamics than municipalities with more equal income distributions.
+
+Housing affordability is closely linked to financial security, wealth accumulation, and social mobility. Understanding whether municipalities with higher income inequality also experience lower housing affordability may therefore provide valuable insights into regional socioeconomic disparities. This study therefore examines the relationship between income inequality and housing affordability across Dutch municipalities, using the ratio of average housing values to income as an indicator of affordability.However, no study has systematically quantified this relationship at the municipality level using administrative CBS data across multiple years, leaving a gap in the 
+empirical understanding of local housing affordability dynamics in the Netherlands.
+
+# Part 2 - Data Sourcing
+
+## 2.1 Load in the data
+
+```{r loading_data and cleaning it}
+library(tidyverse)
+library(cbsodataR)
+
+# Loading in all datasets through CBS API 
+
+# quintile_income - one dataset per year
+kwb_2015 <- cbs_get_data("83220NED")
+kwb_2016 <- cbs_get_data("83487NED")
+kwb_2017 <- cbs_get_data("83765NED")
+kwb_2018 <- cbs_get_data("84286NED")
+kwb_2019 <- cbs_get_data("84583NED")
+kwb_2020 <- cbs_get_data("84799NED")
+kwb_2021 <- cbs_get_data("85039NED")
+
+# median_income -> single dataset with all years
+median_income_raw <- cbs_get_data("85064NED")
+
+# renter_households -> single dataset with all years
+renter_households_raw <- cbs_get_data("82550NED")
+
+# Cleaning quintile_income dataset 
+
+# 2015 only -> different home value name AND income columns
+clean_kwb_2015 <- function(df, yr) {
+  df %>%
+    mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
+    filter(SoortRegio_2 == "Gemeente") %>%
+    select(
+      region_name        = WijkenEnBuurten,
+      municipality       = Gemeentenaam_1,
+      region_type        = SoortRegio_2,
+      region_code        = Codering_3,
+      avg_home_value     = GemiddeldeWoningwaarde_35,
+      pct_owner          = Koopwoningen_40,
+      pct_renter         = HuurwoningenTotaal_41,
+      pct_social_housing = InBezitWoningcorporatie_42,
+      avg_income         = GemiddeldInkomenPerInwoner_66,
+      pct_bottom40       = k_40PersonenMetLaagsteInkomen_67,
+      pct_top20          = k_20PersonenMetHoogsteInkomen_68,
+      pct_low_income     = HuishoudensMetEenLaagInkomen_72,
+      pct_poverty_line   = HuishOnderOfRondSociaalMinimum_73
+    ) %>%
+    mutate(year = yr)
+}
+
+clean_kwb_1617 <- function(df, yr) {
+  df %>%
+    mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
+    filter(SoortRegio_2 == "Gemeente") %>%
+    select(
+      region_name        = WijkenEnBuurten,
+      municipality       = Gemeentenaam_1,
+      region_type        = SoortRegio_2,
+      region_code        = Codering_3,
+      avg_home_value     = GemiddeldeWOZWaardeVanWoningen_35,
+      pct_owner          = Koopwoningen_40,
+      pct_renter         = HuurwoningenTotaal_41,
+      pct_social_housing = InBezitWoningcorporatie_42,
+      avg_income         = GemiddeldInkomenPerInwoner_66,
+      pct_bottom40       = k_40PersonenMetLaagsteInkomen_67,
+      pct_top20          = k_20PersonenMetHoogsteInkomen_68,
+      pct_low_income     = HuishoudensMetEenLaagInkomen_72,
+      pct_poverty_line   = HuishOnderOfRondSociaalMinimum_73
+    ) %>%
+    mutate(year = yr)
+}
+
+# 2018 only -> different income column numbers
+clean_kwb_2018 <- function(df, yr) {
+  df %>%
+    mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
+    filter(SoortRegio_2 == "Gemeente") %>%
+    select(
+      region_name        = WijkenEnBuurten,
+      municipality       = Gemeentenaam_1,
+      region_type        = SoortRegio_2,
+      region_code        = Codering_3,
+      avg_home_value     = GemiddeldeWOZWaardeVanWoningen_35,
+      pct_owner          = Koopwoningen_40,
+      pct_renter         = HuurwoningenTotaal_41,
+      pct_social_housing = InBezitWoningcorporatie_42,
+      avg_income         = GemiddeldInkomenPerInwoner_69,
+      pct_bottom40       = k_40PersonenMetLaagsteInkomen_70,
+      pct_top20          = k_20PersonenMetHoogsteInkomen_71,
+      pct_low_income     = HuishoudensMetEenLaagInkomen_75,
+      pct_poverty_line   = HuishOnderOfRondSociaalMinimum_76
+    ) %>%
+    mutate(year = yr)
+}
+
+# 2019, 2020 and 2021 -> same column numbers
+clean_kwb_1921 <- function(df, yr) {
+  df %>%
+    mutate(SoortRegio_2 = str_trim(SoortRegio_2)) %>%
+    filter(SoortRegio_2 == "Gemeente") %>%
+    select(
+      region_name        = WijkenEnBuurten,
+      municipality       = Gemeentenaam_1,
+      region_type        = SoortRegio_2,
+      region_code        = Codering_3,
+      avg_home_value     = GemiddeldeWOZWaardeVanWoningen_35,
+      pct_owner          = Koopwoningen_40,
+      pct_renter         = HuurwoningenTotaal_41,
+      pct_social_housing = InBezitWoningcorporatie_42,
+      avg_income         = GemiddeldInkomenPerInwoner_72,
+      pct_bottom40       = k_40PersonenMetLaagsteInkomen_73,
+      pct_top20          = k_20PersonenMetHoogsteInkomen_74,
+      pct_low_income     = HuishoudensMetEenLaagInkomen_78,
+      pct_poverty_line   = HuishOnderOfRondSociaalMinimum_79
+    ) %>%
+    mutate(year = yr)
+}
+
+# mergeing all years
+quintile_income <- bind_rows(
+  clean_kwb_2015(kwb_2015, 2015),
+  clean_kwb_1617(kwb_2016, 2016),
+  clean_kwb_1617(kwb_2017, 2017),
+  clean_kwb_2018(kwb_2018, 2018),
+  clean_kwb_1921(kwb_2019, 2019),
+  clean_kwb_1921(kwb_2020, 2020),
+  clean_kwb_1921(kwb_2021, 2021))
+
+# fixing decimal commas
+quintile_income <- quintile_income %>%
+  mutate(across(c(avg_home_value, pct_owner, pct_renter, pct_social_housing,
+                  avg_income, pct_bottom40, pct_top20, pct_low_income,
+                  pct_poverty_line),
+                ~ as.numeric(str_replace(as.character(.), ",", "."))))
+
+# Cleaning median_income dataset 
+
+median_income <- median_income_raw %>%
+  select(
+    population         = Populatie,
+    household_type     = KenmerkenVanHuishoudens,
+    year               = Perioden,
+    region             = RegioS,
+    median_std_income  = MediaanGestandaardiseerdInkomen_4,
+    median_disp_income = MediaanBesteedbaarInkomen_6)
+
+median_income <- median_income %>%
+  mutate(year = as.integer(str_sub(year, 1, 4)))
+
+median_income <- median_income %>%
+  filter(year >= 2015 & year <= 2020)
+
+unique(median_income$year)
+
+# Cleaning renter_households dataset
+
+renter_households <- renter_households_raw %>%
+  select(
+    housing_type  = Woningtype,
+    year          = Perioden,
+    region        = RegioS,
+    housing_stock = BeginstandWoningvoorraad_1 )
+
+renter_households <- renter_households %>%
+  mutate(
+    year = as.integer(str_sub(year, 1, 4)),
+    region = str_trim(region) )
+
+renter_households <- renter_households %>%
+  mutate(housing_type = case_when(
+    housing_type == "T001100" ~ "Total",
+    housing_type == "ZW10290" ~ "Owner-occupied",
+    housing_type == "ZW10340" ~ "Rental",
+    TRUE ~ housing_type))
+
+renter_households <- renter_households %>%
+  filter(year >= 2015 & year <= 2021)
+
+unique(renter_households$year)
+
+# Saving cleaned datasets to Data folder
+
+saveRDS(quintile_income,   "data/quintile_income.rds")
+saveRDS(median_income,     "data/median_income.rds")
+saveRDS(renter_households, "data/renter_households.rds")
+```
+
+## 2.2 Provide a short summary of the dataset(s)
+
+### Quintile Income
+
+This dataset contains 15 variables across 373 Dutch municipalities, collected by CBS covering 2015 to 2021. Key variables include average home value (WOZ tax assessment), average income per resident, income distribution indicators, and two newly constructed variables: affordability ratio and inequality gap. A limitation is that WOZ value may underestimate true market prices and municipality boundaries changed slightly between years.
+
+### Median Income
+
+This dataset contains 6 variables across Dutch regions, collected by CBS covering 2015 to 2020. Key variables are median standardised and disposable income in thousands of euros, broken down by household type. We use this for national-level time series analysis. A limitation is that 2021 data is not yet available.
+
+### Renter Households
+
+This dataset contains 4 variables across Dutch regions, collected by CBS covering 2015 to 2021. The key variable is total housing stock broken down into total, owner-occupied, and rental. A limitation is that it contains no price or income information.
+
+### Justification of the choses data source
+
+CBS was chosen as the primary data source for this study because it provides the most comprehensive and reliable administrative data on Dutch municipalities. Unlike Eurostat, which only provides data at the national or provincial level, CBS publishes municipality-level data that allows for a detailed spatial analysis across all Dutch gemeenten. Compared to survey-based sources, CBS administrative data covers the entire population rather than a sample, eliminating sampling error and making it more suitable for municipality-level comparisons. All three datasets are publicly available through the CBS Open Data portal (opendata.cbs.nl) and are collected using consistent methodology across years, which supports reliable longitudinal analysis.
+
+### Data cleaning 
+
+The data cleaning process involved several deliberate decisions. First, four separate cleaning functions were written to account for differences in CBS column naming conventions across years, CBS renamed the home value variable from "GemiddeldeWoningwaarde" to "GemiddeldeWOZWaardeVanWoningen" between 2015 and 2016, and restructured income columns in 2018 and 2019. While CBS confirms the underlying measure is identical, this renaming adds complexity and is worth noting as a reproducibility consideration. Second, all datasets were filtered to gemeente (municipality) level only, removing district and neighbourhood rows to ensure one observation per municipality per year. Third, Dutch decimal comma notation was converted to English decimal point notation to enable numeric operations in R. A limitation of this approach is that municipality boundaries changed slightly between 2015 and 2021, some municipalities merged or split, meaning that year to year comparisons for affected areas should be interpreted with caution. A refinement would be to use boundary standardised versions of the data, which CBS provides separately.
+
+## 2.3 Describe the type of variables included
+
+### Quintile Income
+
+The variables are socioeconomic (SES) in nature, covering income levels, housing ownership, poverty indicators, and two newly constructed analytical variables. The data comes from administrative sources — CBS combines tax records, municipal registers and housing registries rather than interviewing individuals.
+
+### Median Income
+
+The variables are SES in nature, focused on household income after taxes broken down by household type. The data comes from administrative tax records from the Dutch tax authority (Belastingdienst).
+
+### Renter Households
+
+The variables are structural rather than SES — they describe the physical housing supply by tenure type. The data comes from administrative sources, specifically the Dutch national housing registry (BAG).
+
+# Part 3 - Quantifying
+
+## 3.1 Generate necessary variables
+
+### Variable 1: Affordability Ratio
+
+```{r gen_var1}
+# unaffordability ratio = home value divided by income
+# higher number = less affordable
+quintile_income <- quintile_income %>%
+  mutate(unaffordability_ratio = avg_home_value / avg_income)
+
+# check
+quintile_income %>%
+  select(municipality, year, avg_home_value, avg_income, unaffordability_ratio) %>%
+  head()
+```
+
+### Variable 2: Inequality Gap
+
+```{r gen_var2}
+# inequality gap = difference between top 20% and bottom 40% earners
+# more negative = more unequal
+quintile_income <- quintile_income %>%
+  mutate(inequality_gap = pct_top20 - pct_bottom40)
+
+# check
+print(quintile_income %>%
+  select(municipality, year, pct_top20, pct_bottom40, inequality_gap) %>%
+  head())
+
+# Save updated quintile_income with both new variables
+saveRDS(quintile_income, "data/quintile_income.rds")
+```
+
+## 3.2 Visualize temporal variation
+
+```{r temporal_variation}
+# Plot 1 - median income over time
+income_plot_data <- filter(median_income, region == "NL01  ", 
+                           household_type == "1050010", 
+                           population == "1050010")
+
+ggplot(income_plot_data, aes(x = year, y = median_disp_income)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Median disposable household income in the Netherlands 2015-2020",
+       x = "Year", y = "Median disposable income (x1,000 euros)",
+       caption = "Source: CBS (85064NED)") +
+  theme_minimal()
+
+# Plot 2 - housing stock over time
+housing_plot_data <- filter(renter_households, region == "NL01", 
+                            housing_type %in% c("Total", "Owner-occupied", "Rental"))
+
+ggplot(housing_plot_data, aes(x = year, y = housing_stock, color = housing_type)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Housing stock by tenure type in the Netherlands 2015-2021",
+       x = "Year", y = "Number of dwellings", color = "Housing type",
+       caption = "Source: CBS (82550NED)") +
+  theme_minimal()
+
+# Plot 3 - average unaffordability ratio over time
+averages_data <- quintile_income %>%
+  group_by(year) %>%
+  summarise(mean_unaffordability = mean(unaffordability_ratio, na.rm = TRUE),
+            .groups = "drop")
+
+ggplot(averages_data, aes(x = year, y = mean_unaffordability)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_x_continuous(breaks = 2015:2021) +
+  labs(title = "Average housing unaffordability in Dutch municipalities 2015-2021",
+       x = "Year", y = "Average unaffordability ratio",
+       caption = "Source: CBS (83220NED - 85039NED)") +
+  theme_minimal()
+```
+
+### Interpretation figure 3.2 
+
+Figure 3.2 presents the average housing unaffordability ratio across Dutch municipalities between 2015 and 2021. The unaffordability ratio is calculated as average home value divided by average income, where higher values indicate that housing is less affordable relative to local incomes.
+
+The figure shows that housing unaffordability generally increased over the study period. After a small decline between 2015 and 2017, the average unaffordability ratio rose steadily from 2018 onwards, reaching its highest level in 2021. This suggests that house prices increased faster than incomes in many municipalities during the later years of the period.
+
+This figure is relevant to the social problem of housing affordability because it demonstrates that affordability pressures have intensified over time. The upward trend indicates that housing has become increasingly difficult to afford relative to income, highlighting the growing importance of housing affordability as a policy issue in the Netherlands. Comparing specific periods, the unaffordability ratio declined by approximately 3% between 2015 and 2017, then rose by approximately 15% between 2017 and 2021, indicating that the acceleration in housing costs was concentrated in the later years of the study period and coincided with a period of strong economic growth and low interest rates in the Netherlands.
+
+Figure 3.2.1 shows that median disposable household income in the Netherlands increased steadily from €32,500 in 2015 to €38,000 in 2020, an increase of approximately 16.9% over the six-year period (roughly 2.7% per year on average). Growth was relatively modest in the earlier years — around €0.7-0.9 thousand per year between 2015 and 2018 — but accelerated noticeably from 2018 onwards, with increases of €1.7 thousand (2018-2019) and €1.3 thousand (2019-2020). This indicates that income growth gained momentum towards the end of the period rather than following a perfectly linear trend. Since the affordability ratio used elsewhere in this report (Section 3.1) is defined as average home value divided by average income, this income series represents the denominator of that ratio: rising incomes work to improve affordability in isolation, but whether affordability actually improved over this period depends on how housing values developed over the same years.
+
+Figure 3.2.2 shows the development of the Dutch housing stock by tenure type between 2015 and 2021. The total housing stock grew from approximately 7.59 million dwellings in 2015 to 7.97 million in 2021, an increase of about 378,000 dwellings (+5.0%). Both tenure types contributed similar absolute increases — owner-occupied housing grew from roughly 4.91 million to 5.10 million dwellings (+189,800, +3.9%), while the rental segment grew from about 2.68 million to 2.87 million dwellings (+188,500, +7.0%). Because the rental segment started from a smaller base, its relative growth rate was nearly double that of owner-occupied housing, so the rental share of the total stock rose slightly, from 35.3% in 2015 to 36.0% in 2021. Overall, the expansion of the housing stock was gradual and fairly steady across the period, without sharp jumps or declines. Comparing the two figures, median income grew by roughly 17% between 2015 and 2020, considerably faster than the 5% growth in total housing stock over a comparable period (2015-2021). If housing demand scales with rising incomes and population growth, this relatively slow expansion of supply — particularly in the owner-occupied segment — may help explain the affordability pressures identified in the spatial analysis (Section 3.3), where municipalities with higher average incomes also tend to show the highest affordability ratios. 
+
+## 3.3 Visualize spatial variation
+
+```{r spatial_variation}
+library(sf)
+library(tidyverse)
+library(viridisLite)
+
+# load data
+quintile_income <- readRDS("data/quintile_income.rds")
+
+# download municipality map
+municipalities <- st_read("https://cartomap.github.io/nl/wgs84/gemeente_2021.geojson")
+
+# prepare and merge
+map_data <- quintile_income %>%
+  filter(year == 2021) %>%
+  mutate(region_code = trimws(region_code))
+
+municipalities_map <- municipalities %>%
+  left_join(map_data, by = c("statcode" = "region_code"))
+
+# add affordability ratio
+municipalities_map <- municipalities_map %>%
+  mutate(unaffordability_ratio = avg_home_value / avg_income)
+
+# draw the map
+ggplot(municipalities_map) +
+  geom_sf(aes(fill = unaffordability_ratio), color = "white", size = 0.1) +
+  scale_fill_viridis_c(
+    option = "plasma",
+    name = "Unaffordability\nRatio",
+    na.value = "grey80",
+    labels = scales::number_format(accuracy = 0.1)
+  ) +
+  labs(
+    title = "Housing Unaffordability Across Dutch Municipalities (2021)",
+    subtitle = "Unaffordability ratio = average home value divided by average income. Higher ratio means homes are less affordable relative to income.",
+    caption = "Source: CBS Kerncijfers wijken en buurten (2021). Grey = no data available."
+  ) +
+  theme_void() +
+  theme(
+    plot.title    = element_text(size = 14, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 9, hjust = 0.5, color = "grey40"),
+    plot.caption  = element_text(size = 8, hjust = 0.5, color = "grey40"),
+    legend.position = "right",
+    legend.title  = element_text(size = 9, face = "bold"),
+    legend.text   = element_text(size = 8),
+    plot.margin   = margin(10, 10, 10, 10)
+  )
+```
+
+### Interpretation figure 3.3
+
+Figure 3.3 presents the housing un-affordability ratio across Dutch municipalities in 2021. The unaffordability ratio is calculated as average home value divided by average income, where higher values indicate greater housing unaffordability because housing prices are high relative to local incomes.
+
+The map reveals substantial spatial variation in housing un-affordability across the Netherlands. Several municipalities display particularly high un-affordability ratios, including Bloemendaal (16.35), Blaricum (15.95), Laren (15.46), Landsmeer (13.70), and Wassenaar (13.36). These municipalities experience greater un-affordability pressures because house values are high relative to local incomes. In contrast, many other municipalities exhibit lower un-affordability ratios, indicating that housing is more affordable relative to income.
+
+This figure is directly relevant to the social problem of housing affordability because it highlights geographic inequalities in access to housing. The results show that affordability pressures are not evenly distributed across the country, with some municipalities facing substantially greater challenges than others. Understanding these spatial differences is important for policymakers, as local housing markets may require different policy responses than those suggested by national averages.
+
+## 3.4 Visualize sub-population variation
+
+```{r subpop_boxplot_by_year}
+library(tidyverse)
+
+# filtering to 3 years
+subpop_data <- quintile_income %>%
+  filter(year %in% c(2015, 2018, 2021)) %>%
+  mutate(year = as.factor(year))
+
+# check years are correct
+unique(subpop_data$year)
+
+# income categories MIJKE (data-driven terciles)
+income_terciles<-quantile(subpop_data$avg_income, probs = c(1/3,2/3), na.rm = TRUE)
+
+subpop_data<-subpop_data%>%
+  mutate(income_category=case_when(
+    avg_income<income_terciles[1] ~ "Low income",
+    avg_income<income_terciles[2] ~ "Medium income",
+    TRUE ~ "High income"
+  ))
+# why? - quantile(subpop_data$avg_income, probs = c(1/3,2/3)) is computed with data already filtered to 2015/18/21 (subpop_data at this point in the chunk). This way the cut-off's reflect actual income distr. of municipalities we're plotting, pooled across the 3 yrs.
+  # gives us 2 boundary values: (1) 33rd percentile and (2) 66th percentile of avg_income 
+  # below 33%ile = Low inc.
+  # between 33%ile and 66%ile = Med inc.
+  # above 66%ile = High inc.
+
+#checking what cut-off's and group sizes actually are:
+income_terciles
+table(subpop_data$income_category)
+
+# renter groups
+subpop_data <- subpop_data %>%
+  mutate(renter_group = case_when(
+    pct_renter > 40 ~ "High renter share",
+    TRUE ~ "Low renter share"
+  ))
+
+# fix ordering
+subpop_data <- subpop_data %>%
+  mutate(income_category = factor(income_category,
+                                  levels = c("Low income", "Medium income", "High income")))
+
+# removing missing unaffordability values
+subpop_data<-subpop_data%>%
+  filter(!is.na(unaffordability_ratio))
+
+# BOXPLOT with all 3 years
+ggplot(subpop_data, aes(x = income_category, y = unaffordability_ratio, fill = renter_group)) +
+  geom_boxplot() +
+  facet_wrap(~ year) +
+  labs(
+    title = "Housing unaffordability by income category and renter share (2015, 2018, 2021)",
+    x = "Income category",
+    y = "Unaffordability ratio",
+    fill = "Renter share",
+    caption = "Source: CBS (2015-2021)"
+  ) +
+  scale_fill_viridis_d() +
+  theme_minimal()
+```
+
+### Interpretation figure 3.4
+
+Figure 3.4 compares housing unaffordability across municipalities with different income levels and renter shares in 2015, 2018, and 2021. Municipalities were grouped into low-, medium-, and high-income categories and further divided according to whether they had a high or low share of renter households.
+
+The figure shows that housing unaffordability generally increased between 2015 and 2021 across all income categories, as evidenced by the upward shift in the distributions over time. This increase is particularly visible among high-income municipalities, which consistently exhibit the highest unaffordability ratios. While higher-income municipalities tend to have higher incomes, house values in these areas are also substantially higher, resulting in greater affordability pressures.
+
+Differences between municipalities with high and low renter shares are most pronounced within the low- and medium-income categories. In these groups, municipalities with a low renter share generally display higher unaffordability ratios than those with a high renter share. The boxplots also reveal considerable variation within each category, indicating that municipalities with similar income levels and renter shares can still experience very different housing affordability outcomes.
+
+This figure is directly relevant to the social problem of housing affordability because it demonstrates that affordability pressures vary not only geographically, but also across socio-economic groups. Income levels and housing tenure structures appear to be associated with differences in housing affordability, highlighting the unequal impact of rising housing costs across Dutch municipalities.To quantify these differences, the mean unaffordability ratio for high-income municipalities with a low renter share rose from approximately 11.3 in 2015 to 12.1 in 2021, an increase of around 7%. In contrast, low-income municipalities with a high renter share showed a mean ratio of approximately 7.5 in 2015, rising to 8.1 in 2021. This suggests that while unaffordability increased across all groups, the absolute gap between the most and least affordable groups widened over time. The implications are significant: low-income renters, who have the least ability to absorb rising housing costs, are concentrated in municipalities where affordability pressures, while lower in absolute terms, are growing at a similar rate to wealthier areas. Without targeted housing policy interventions, this gap is likely to persist or widen further as house prices continue to outpace income growth.
+
+## 3.5 Event analysis
+
+```{r event_data_prep}
+event_data <- quintile_income %>% 
+  group_by(year) %>% 
+  summarise(
+    mean_income = mean(avg_income, na.rm = TRUE),
+    mean_unaffordability = mean(unaffordability_ratio, na.rm = TRUE),
+    .groups = "drop"
+    ) %>%
+  mutate(
+    income_index = mean_income/first(mean_income)*100,
+    unaffordability_index = mean_unaffordability/first(mean_unaffordability)*100
+  )
+
+# first(mean_income) is the 2015 value, so income_index becomes 100 in 2015 and tracks percentage change from there each year   # same for unaffordability.
+```
+
+
+```{r event_data_long}
+
+## Shape to long format for 2-line plot w/ legend
+
+event_data_long <- event_data %>%
+  select(year, income_index, unaffordability_index) %>%
+  pivot_longer(
+    cols = c(income_index, unaffordability_index),
+    names_to = "variable",
+    values_to = "index_value"
+  ) %>%
+  mutate(variable = recode(variable,
+                           income_index = "Average income",
+                           unaffordability_index = "Unaffordability ratio"
+                           ))
+```
+
+
+```{r event_combined, fig.cap="Income and housing unaffordability around COVID-19, indexed to 2015 = 100."}
+
+## Making 1 combined plot for event_income and event_unaffordability
+
+ggplot(event_data_long, aes(x = year, y = index_value, color = variable)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  geom_vline(xintercept = 2020, linetype = "dashed", color = "red") +
+  annotate("text", x = 2020, y = max(event_data_long$index_value, na.rm = TRUE),
+           label = "COVID-19 (2020)", color = "red", hjust = -0.04, vjust = -0.9, size = 2) +
+  scale_x_continuous(breaks = 2015:2021) + 
+  scale_color_manual(values = c(
+    "Average income" = "steelblue",
+    "Unaffordability ratio" = "darkorange"
+  )) + 
+  labs(
+    title = "Income and Housing Unaffordability Around COVID-19",
+    x = "Year",
+    y = "Index (2015 = 100)",
+    color = "Indicator",
+    caption = "Source: CBS. Red dashed line marks COVID-19 in 2020. Both series indexed to 2015 = 100"
+  ) +
+  theme_minimal()
+
+```
+
+### Interpretation dual-line event plot
+
+Figure 3.5 presents indexed trends in average income and housing unaffordability across Dutch municipalities between 2015 and 2021, with both variables normalized to a value of 100 in 2015. The red dashed line marks the onset of the COVID-19 pandemic in 2020.
+
+The figure shows that average income increased steadily throughout the study period, rising by approximately 20% between 2015 and 2021. Housing unaffordability followed a different pattern, declining slightly between 2015 and 2017 before increasing consistently from 2018 onwards. By 2021, the unaffordability index had risen above its 2015 level, indicating that housing became less affordable relative to income.
+
+The relationship between the two variables suggests that rising incomes alone were insufficient to offset increasing housing costs. Although income continued to grow during and after the COVID-19 period, housing unaffordability also increased, implying that house prices rose faster than incomes. While the figure does not establish a causal effect of COVID-19, it indicates that affordability pressures intensified during the years surrounding the pandemic despite continued income growth. This figure is relevant to the social problem of housing affordability because it highlights the disconnect between income growth and housing market outcomes. Even as average incomes increased, housing became increasingly difficult to afford, suggesting that broader housing market dynamics played an important role in shaping affordability pressures across Dutch municipalities.
+
+
+```{r event_data_prep}
+event_data <- quintile_income %>% 
+  filter(year >= 2015 & year <= 2021) %>%
+  group_by(year) %>%
+  summarise(
+    mean_income = mean(avg_income, na.rm = TRUE),
+    mean_unaffordability = mean(unaffordability_ratio, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+## Income plot
+
+```{r event_income, fig.cap= "Average income per resident around COVID-19 (2015-2021)."}
+ggplot(event_data, aes(x = year, y = mean_income)) +
+  geom_line(color = "steelblue", linewidth = 1) +
+  geom_point(color = "steelblue", size = 2) + 
+  geom_vline(xintercept = 2020, linetype = "dashed", color = "red") +
+  annotate("text", x = 2020, y = max(event_data$mean_income, na.rm = TRUE),
+           label = "COVID-19 (2020)", color = "red", hjust = -0.1,  vjust = -0.3, size = 2) + 
+  scale_x_continuous(breaks = 2015:2021) +
+  labs(
+    title = "Average Income Around COVID-19",
+    x = "Year",
+    y = "Average income per resident",
+    caption = "Source: CBS. Red dashed line marks COVID-19 in 2020"
+  ) +
+  theme_minimal()
+```
+
+### Interpretation income plot
+
+Figure 3.5a presents the average income per resident in Dutch municipalities between 2015 and 2021, with the red dashed line marking the onset of the COVID-19 pandemic in 2020. The figure shows a steady increase in average income throughout the entire period. Income continued to rise both before and after 2020, with no obvious decline associated with the pandemic. This figure is relevant to the social problem of housing affordability because income is a key determinant of households' ability to access housing. Although average incomes continued to increase during the COVID-19 period, rising incomes alone do not necessarily imply improved affordability if housing prices increase at an even faster rate.
+
+## Unaffordability plot
+
+```{r event_unaffordability, fig.cap="Average housing unaffordability around COVID-19 (2015-2021)."}
+ggplot(event_data, aes(x = year, y = mean_unaffordability)) + 
+  geom_line(color = "darkorange", linewidth = 1) + 
+  geom_point(color = "darkorange", size = 2) +
+  geom_vline(xintercept = 2020, linetype = "dashed", color = "red") + 
+  annotate("text", x = 2020, y = max(event_data$mean_unaffordability, na.rm = TRUE),
+           label = "COVID-19 (2020)", color = "red", hjust = -0.1, vjust = -0.14, size = 2) +
+  scale_x_continuous(breaks = 2015:2021) + 
+  labs(
+    title = "Average Housing Unaffordability Around COVID-19",
+    x = "Year",
+    y = "Average unaffordability ratio",
+    caption = "Source: CBS. Red dashed line marks COVID-19 in 2020."
+  ) + 
+  theme_minimal()
+```
+
+### Interpretation Unaffordability plot
+
+Figure 3.5b presents the average housing unaffordability ratio in Dutch municipalities between 2015 and 2021, with the red dashed line indicating the onset of the COVID-19 pandemic in 2020. The figure shows that unaffordability declined slightly between 2015 and 2017 before increasing steadily from 2018 onwards. The upward trend continued through 2020 and 2021, with the highest average unaffordability ratio observed in 2021. This figure is directly relevant to the social problem of housing affordability because it suggests that housing became increasingly difficult to afford relative to income during the years surrounding the pandemic. While the figure does not establish a causal effect of COVID-19, it indicates that affordability pressures continued to intensify during and immediately after the pandemic period, potentially reflecting broader developments in the Dutch housing market.
+
+Taken together, the figures suggest that although average incomes continued to grow during the COVID-19 period, housing unaffordability also increased, indicating that house prices likely rose faster than incomes between 2020 and 2021.
+
+# Part 4 - Discussion
+
+## 4.1 Discuss your findings
+Between 2015 and 2021, average incomes in the Netherlands grew by roughly 17% (Statistics Netherlands [CBS], 2015–2021). Housing unaffordability dipped slightly until 2017, then climbed steadily to its highest point in 2021. Housing stock grew only around 5% over the same period (Statistics Netherlands [CBS], 2012–2024). Prices outran both income and supply, and that gap is what this report is really about.
+
+The spatial map makes clear that this pressure isn't evenly distributed. Municipalities like Bloemendaal and Blaricum had unaffordability ratios above 15 in 2021; many others sat far lower. A national policy response is a blunt instrument for a problem that's fundamentally local.The sub-population data adds the most interesting finding. High-income municipalities had the highest ratios throughout, partly mechanical, since wealthier areas attract more expensive housing. More telling is the low-income, low-renter-share group, where the mean unaffordability ratio barely moved between 2015 (9.34) and 2021 (8.79). These are modest-income areas dominated by owner-occupied housing, with very little buffer if prices keep rising.The inequality gap - defined as the difference between the percentage of top 20% and bottom 40% earners per municipality - reinforces this pattern. Municipalities with the most negative inequality gap tend to be low-income areas where the bottom 40% of earners are heavily concentrated, yet these same areas do not always face the highest unaffordability ratios. Instead, it is the high-income, low-inequality municipalities in Noord-Holland that combine both high incomes and extremely high home values, producing the highest unaffordability ratios in 2021. This suggests that rising incomes at the top of the distribution, rather than inequality alone, are the primary driver of housing unaffordability.
+
+Through COVID-19, income kept rising. Unaffordability kept rising too. The two lines diverge after 2020, not converge.
+A few caveats: WOZ valuations likely understate true market prices, the median income data only runs to 2020, and the analysis is descriptive. It shows associations, not causes. A regression framework with controls for density, distance to urban centres, and zoning restrictions would be the natural next step.
+
+Overall, the findings of this study suggest that housing unaffordability in the Netherlands is a spatially concentrated, inequality linked phenomenon that cannot be adequately addressed through national level policies alone. Targeted interventions at the municipality level, particularly in high-demand areas like Noord-Holland, are needed to address the structural disconnect between income growth and housing market dynamics.
+
+# Part 5 - Reproducibility
+
+## 5.1 Github repository link
+
+Provide the link to your PUBLIC repository here: https://github.com/NATEVD/Tutorial4-1-Income-inequality-and-housing-affordability-in-NL-2
+
+## 5.2 Reference list
+
+Dewilde, C., & Lancee, B. (2012). *Income inequality and access to housing in
+Europe* (GINI Discussion Paper No. 32). Amsterdam Institute for Advanced Labour
+Studies (AIAS).
+https://gini-research.org/wp-content/uploads/2021/03/DP_32_Income-Inequality-and-Access-to-Housing-in-Europe.pdf
+
+Geis, A. (2023). *Housing supply in the Netherlands: The road to more affordable
+living* (IMF Selected Issues Paper No. SIP/2023/023). International Monetary Fund.
+https://www.imf.org/-/media/files/publications/selected-issues-papers/2023/english/sipea2023023.pdf
+
+OECD. (2025). *OECD economic surveys: Netherlands 2025*. OECD Publishing.
+https://www.oecd.org/en/publications/oecd-economic-surveys-netherlands-2025_2dd1f4aa-en.html
+
+Statistics Netherlands (CBS). (2015–2021). *Kerncijfers wijken en buurten*
+[Dataset]. CBS Open Data. https://opendata.cbs.nl
+
+Statistics Netherlands (CBS). (2011–2020). *Inkomen van huishoudens,
+huishoudenskenmerken, regio* [Dataset]. CBS Open Data. https://opendata.cbs.nl
+
+Statistics Netherlands (CBS). (2012–2024). *Woningen naar type, bouwjaar, regio*
+[Dataset]. CBS Open Data. https://opendata.cbs.nl
+
+
