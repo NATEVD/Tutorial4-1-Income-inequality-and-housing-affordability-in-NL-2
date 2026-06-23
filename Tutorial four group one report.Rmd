@@ -1,6 +1,6 @@
 ---
 title: "Income inequality and housing affordabilities in The Netherlands"
-author: "T. K. (2898504), N. D. (2801374), F. N. (2809143), K. M. (2786698), C. T. (2785569), M. G. (2824547), F. S.i (2787189)"
+author: "TK(2898504), ND(2801374), FN(2809143), KM(2786698), CT(2785569), MG(2824547), FS(2787189) YA(2809149)"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -13,12 +13,11 @@ output:
 ## Set-up your environment
 
 ```{r package_install, include=FALSE}
-#as the below"install.packages()" were written, every time anyone knits this document, R will try to download and re-install 4 packages from CRAN. This is slow, requires internet, and can fail/error out the whole knit if there's no internet access or CRAN is unreachable. It also doesn't install "cbsodataR", sf, or "viridisLite", which are library()'d later (lines 60, 319, 322) — so the knit will crash at those points on a fresh machine with "there is no package called 'cbsodataR'".
 
-#install.packages("tidyverse")
-#install.packages("yaml")
-#install.packages("rmarkdown")
-#install.packages("dplyr")
+install.packages("tidyverse")
+install.packages("yaml")
+install.packages("rmarkdown")
+install.packages("dplyr")
 
 # This conditional version only installs what's actually missing, including everything the doc actually uses:
 pkgs<-c("tidyverse","yaml","rmarkdown","dplyr","cbsodataR","sf","viridisLite")
@@ -26,10 +25,10 @@ new_pkgs<-pkgs[!(pkgs %in% installed.packages()[,"Package"])]
 if(length(new_pkgs)>0)install.packages(new_pkgs)
 ```
 
-```{r packages}
-require(tidyverse)
-require(rmarkdown)
-require(yaml)
+```{r packages, include=FALSE}
+library(tidyverse)
+library(rmarkdown)
+library(yaml)
 library(dplyr)
 ```
 
@@ -39,7 +38,7 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE)
 
 ## Title Page
 
-Toms Ķelderis (2898504), Nathan van Doorn (2801374), Frederick Nuboer (2809143), Khpelwaak Mamound (2786698), Caner Tepe (2785569), Mijke Gerritsen (2824547), Fouad Safssafi (2787189)
+Toms Ķelderis (2898504), Nathan van Doorn (2801374), Frederick Nuboer (2809143), Khpelwaak Mamound (2786698), Caner Tepe (2785569), Mijke Gerritsen (2824547), Fouad Safssafi (2787189), Yodahea Abraham (2809149)
 
 Tutorial 4, Group 1
 
@@ -319,7 +318,7 @@ kable(variable_table,
 
 ### Variable 1: Affordability Ratio
 
-```{r gen_var1}
+```{r gen_var1, results='hide'}
 # unaffordability ratio = home value divided by income
 # higher number = less affordable
 quintile_income <- quintile_income %>%
@@ -333,7 +332,7 @@ quintile_income %>%
 
 ### Variable 2: Inequality Gap
 
-```{r gen_var2}
+```{r gen_var2, results='hide'}
 # inequality gap = difference between top 20% and bottom 40% earners
 # more negative = more unequal
 quintile_income <- quintile_income %>%
@@ -484,7 +483,7 @@ subpop_data <- quintile_income %>%
   mutate(year = as.factor(year))
 
 # check years are correct
-unique(subpop_data$year)
+# unique(subpop_data$year)
 
 # income categories MIJKE (data-driven terciles)
 income_terciles<-quantile(subpop_data$avg_income, probs = c(1/3,2/3), na.rm = TRUE)
@@ -645,9 +644,12 @@ ggplot(event_data, aes(x = year, y = mean_income)) +
 
 Figure 3.5a presents the average income per resident in Dutch municipalities between 2015 and 2021, with the red dashed line marking the onset of the COVID-19 pandemic in 2020. The figure shows a steady increase in average income throughout the entire period. Income continued to rise both before and after 2020, with no obvious decline associated with the pandemic. This figure is relevant to the social problem of housing affordability because income is a key determinant of households' ability to access housing. Although average incomes continued to increase during the COVID-19 period, rising incomes alone do not necessarily imply improved affordability if housing prices increase at an even faster rate.
 
-## Unaffordability plot
+
 
 ```{r event_unaffordability, fig.cap="Average housing unaffordability around COVID-19 (2015-2021)."}
+
+## Unaffordability plot
+
 ggplot(event_data, aes(x = year, y = mean_unaffordability)) + 
   geom_line(color = "darkorange", linewidth = 1) + 
   geom_point(color = "darkorange", size = 2) +
