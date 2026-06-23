@@ -1,5 +1,5 @@
 ---
-title: "Income inequality and housing affordabilities in The Netherlands"
+title: "Income Inequality and Housing Affordability in The Netherlands"
 author: "T. K. (2898504), N. D. (2801374), F. N. (2809143), K. M. (2786698), C. T. (2785569), M. G. (2824547), F. S.i (2787189)"
 date: "`r Sys.Date()`"
 output:
