@@ -473,6 +473,8 @@ The map reveals substantial spatial variation in housing un-affordability across
 
 This figure is directly relevant to the social problem of housing affordability because it highlights geographic inequalities in access to housing. The results show that affordability pressures are not evenly distributed across the country, with some municipalities facing substantially greater challenges than others. Understanding these spatial differences is important for policymakers, as local housing markets may require different policy responses than those suggested by national averages.
 
+A shaded map was selected over alternatives such as bubble maps because municipality boundaries directly reflect where housing policy operates. A limitation is that larger rural municipalities dominate visually regardless of population size - the most affected areas like Bloemendaal and Blaricum are in fact small and geographically concentrated in Noord-Holland.
+
 ## 3.4 Visualize sub-population variation
 
 ```{r subpop_boxplot_by_year}
