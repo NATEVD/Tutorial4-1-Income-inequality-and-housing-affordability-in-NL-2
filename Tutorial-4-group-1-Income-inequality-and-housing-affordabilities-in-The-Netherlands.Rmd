@@ -3,11 +3,11 @@ title: "Income Inequality and Housing Affordability in The Netherlands"
 author: "T. K. (2898504), N. D. (2801374), F. N. (2809143), K. M. (2786698), C. T. (2785569), M. G. (2824547), F. S.i (2787189)"
 date: "`r Sys.Date()`"
 output:
-  html_document:
-    df_print: paged
   pdf_document:
     toc: true
     toc_depth: 2
+  html_document:
+    df_print: paged
 ---
 
 ## Set-up your environment
