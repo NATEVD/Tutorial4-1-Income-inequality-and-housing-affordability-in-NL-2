@@ -3,11 +3,11 @@ title: "Income inequality and housing affordabilities in The Netherlands"
 author: "T. K. (2898504), N. D. (2801374), F. N. (2809143), K. M. (2786698), C. T. (2785569), M. G. (2824547), F. S.i (2787189)"
 date: "`r Sys.Date()`"
 output:
+  html_document:
+    df_print: paged
   pdf_document:
     toc: true
     toc_depth: 2
-  html_document:
-    df_print: paged
 ---
 
 ## Set-up your environment
@@ -675,9 +675,10 @@ Taken together, the figures suggest that although average incomes continued to g
 ## 4.1 Discuss your findings
 Between 2015 and 2021, average incomes in the Netherlands grew by roughly 17% (Statistics Netherlands [CBS], 2015–2021). Housing unaffordability dipped slightly until 2017, then climbed steadily to its highest point in 2021. Housing stock grew only around 5% over the same period (Statistics Netherlands [CBS], 2012–2024). Prices outran both income and supply, and that gap is what this report is really about.
 
-The spatial map makes clear that this pressure isn't evenly distributed. Municipalities like Bloemendaal and Blaricum had unaffordability ratios above 15 in 2021; many others sat far lower. A national policy response is a blunt instrument for a problem that's fundamentally local.The sub-population data adds the most interesting finding. High-income municipalities had the highest ratios throughout, partly mechanical, since wealthier areas attract more expensive housing. More telling is the low-income, low-renter-share group, where the mean unaffordability ratio barely moved between 2015 (9.34) and 2021 (8.79). These are modest-income areas dominated by owner-occupied housing, with very little buffer if prices keep rising.The inequality gap - defined as the difference between the percentage of top 20% and bottom 40% earners per municipality - reinforces this pattern. Municipalities with the most negative inequality gap tend to be low-income areas where the bottom 40% of earners are heavily concentrated, yet these same areas do not always face the highest unaffordability ratios. Instead, it is the high-income, low-inequality municipalities in Noord-Holland that combine both high incomes and extremely high home values, producing the highest unaffordability ratios in 2021. This suggests that rising incomes at the top of the distribution, rather than inequality alone, are the primary driver of housing unaffordability.
+The spatial map makes clear that this pressure isn't evenly distributed. Municipalities like Bloemendaal and Blaricum had unaffordability ratios above 15 in 2021; many others sat far lower. A national policy response is a blunt instrument for a problem that's fundamentally local. The sub-population data adds the most interesting finding. High-income municipalities had the highest ratios throughout, partly mechanical, since wealthier areas attract more expensive housing. More telling is the low-income, low-renter-share group, where the mean unaffordability ratio barely moved between 2015 (9.34) and 2021 (8.79). These are modest-income areas dominated by owner-occupied housing, with very little buffer if prices keep rising. The inequality gap - defined as the difference between the percentage of top 20% and bottom 40% earners per municipality - reinforces this pattern. Municipalities with the most negative inequality gap tend to be low-income areas where the bottom 40% of earners are heavily concentrated, yet these same areas do not always face the highest unaffordability ratios. Instead, it is the high-income, low-inequality municipalities in Noord-Holland that combine both high incomes and extremely high home values, producing the highest unaffordability ratios in 2021. This suggests that rising incomes at the top of the distribution, rather than inequality alone, are the primary driver of housing unaffordability.
 
 Through COVID-19, income kept rising. Unaffordability kept rising too. The two lines diverge after 2020, not converge.
+
 A few caveats: WOZ valuations likely understate true market prices, the median income data only runs to 2020, and the analysis is descriptive. It shows associations, not causes. A regression framework with controls for density, distance to urban centres, and zoning restrictions would be the natural next step.
 
 Overall, the findings of this study suggest that housing unaffordability in the Netherlands is a spatially concentrated, inequality linked phenomenon that cannot be adequately addressed through national level policies alone. Targeted interventions at the municipality level, particularly in high-demand areas like Noord-Holland, are needed to address the structural disconnect between income growth and housing market dynamics.
